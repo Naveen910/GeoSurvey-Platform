@@ -1,12 +1,14 @@
 import React from 'react';
 import Header from '../components/Header';
+import QuickActions from '../components/QuickActions';
 
 const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <QuickActions />
 
-      {/* Placeholder: Other components will be added below step by step */}
+      
       <main className="p-6">
         
       </main>

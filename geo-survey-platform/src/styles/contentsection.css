@@ -1,16 +1,14 @@
 /* Layout Container */
 .content-section {
   max-width: 920px;
-  margin-left: 24px;
-  margin-right: auto;
-  padding-bottom: 24px;
+  flex: 1;
+  
 }
 
 /* Section Title */
 .content-title {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 12px;
 }
 
 /* Tabs + Tools Wrapper */
@@ -128,17 +126,19 @@
 
 /* Common card styles */
 .project-card {
-  background: #ffffff;
+  background: #E5E7EB;
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 0 0 1px #e5e7eb;
-  transition: box-shadow 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+  
   cursor: pointer;
   text-align: center;
 }
 
 .project-card:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 /* Grid View */

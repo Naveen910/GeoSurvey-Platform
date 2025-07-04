@@ -1,0 +1,47 @@
+/* FLEX WRAPPER for Content + Quick Links */
+.main-content-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 0 24px;
+  flex-wrap: wrap;
+}
+
+/* Content Area (left side) */
+.content-section {
+  flex: 1;
+  max-width: 920px;
+}
+
+/* Quick Links (right side) */
+.quick-links-list {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .main-content-wrapper {
+    flex-direction: column;
+    padding: 0 18px;
+  }
+
+  .content-section,
+  .quick-links-list {
+    width: 100%;
+    max-width: 100%;
+  }
+
+}
+
+/* Outer page container with horizontal spacing */
+.page-container {
+  padding-left: 250px;
+  padding-right: 250px;
+}
+@media (max-width: 1400px) {
+  .page-container {
+    padding-left: .001px;
+    padding-right: .001px;
+  }
+}

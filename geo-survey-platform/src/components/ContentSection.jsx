@@ -36,6 +36,8 @@ const ContentSection = () => {
     <div className="content-section">
       <h2 className="content-title">My Content</h2>
 
+      
+
       <div className="content-controls">
         <div className="tabs">
           {allTabs.map((tab, i) => (

@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import React from 'react';
+import '../styles/dashboard.css';                           
 import Header from '../components/Header';
 import QuickActions from '../components/QuickActions';
 import SystemOverview from '../components/SystemOverview';
 import ContentSection from '../components/ContentSection';
+import QuickLinks from '../components/QuickLinks';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [selectedTab, setSelectedTab] = useState('All Content');
-  const [view, setView] = useState('grid'); // 'grid' or 'list'
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
-  const handleToggleView = (mode) => {
-    setView(mode); // mode is 'grid' or 'list'
+  // Pass the navigation handler as a prop to QuickLinks
+  const handleQuickLinkClick = (linkName) => {
+    if (linkName === 'Map Viewer') {
+      navigate('/map-viewer');
+    }
+    // Add more navigation logic here if needed
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-container">
       <Header />
       <QuickActions />
       <SystemOverview />
-      <ContentSection />
-
-      
+      <div className="main-content-wrapper">
+        <ContentSection />
+        <QuickLinks onQuickLinkClick={handleQuickLinkClick} />
+      </div>
     </div>
   );
 };

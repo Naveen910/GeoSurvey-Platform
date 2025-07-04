@@ -1,0 +1,184 @@
+/* Layout Container */
+.content-section {
+  max-width: 920px;
+  margin-left: 24px;
+  margin-right: auto;
+  padding-bottom: 24px;
+}
+
+/* Section Title */
+.content-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Tabs + Tools Wrapper */
+.content-controls {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tab-button.active {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* Tools: Search + Toggle */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  border-radius: 8px;
+  min-width: 200px;
+}
+
+.search-box img {
+  width: 16px;
+  height: 16px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  padding-left: 6px;
+  background: transparent;
+  flex: 1;
+}
+
+/* Toggle Buttons */
+.toggle-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.toggle-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.toggle-btn.active {
+  border: 1px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .content-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tools {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+
+  .search-box {
+    flex: 1;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grid View */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.content-grid.list-view {
+  grid-template-columns: 1fr;
+}
+
+/* Common card styles */
+.project-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 0 0 1px #e5e7eb;
+  transition: box-shadow 0.2s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.project-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Grid View */
+.project-image {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+.project-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.project-type {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+
+
+/* List View */
+.project-card.list {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.project-card.list .project-image {
+  margin: 0;
+}
+
+.project-card.list .project-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.4;
+}

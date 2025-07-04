@@ -1,0 +1,102 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 12px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-logo {
+  height: 25px;
+  width: 25px;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000; /* Tailwind blue-600 */
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280; /* Tailwind gray-500 */
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notification-button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #4b5563; /* Tailwind gray-600 */
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  height: 8px;
+  width: 8px;
+  background-color: #ef4444; /* Tailwind red-500 */
+  border-radius: 50%;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  color: #374151; /* Tailwind gray-700 */
+}
+
+.user-avatar {
+  height: 36px;
+  width: 36px;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  position: relative;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  height: 8px;
+  width: 8px;
+  background-color: #ef4444; /* red-500 */
+  border-radius: 50%;
+}

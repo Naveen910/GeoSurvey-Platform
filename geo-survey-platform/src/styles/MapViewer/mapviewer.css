@@ -1,0 +1,12 @@
+.map-viewer-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.map-viewer-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}

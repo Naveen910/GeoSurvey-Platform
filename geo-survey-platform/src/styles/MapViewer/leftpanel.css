@@ -1,0 +1,148 @@
+.left-panel {
+  width: 280px;
+  padding: 12px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabs {
+  display: flex;
+  
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs img {
+  width: 18px;   
+  height: 18px;
+  object-fit: contain;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.tab.active {
+  border-bottom: 2px solid #2563eb;
+  color: #2563eb;
+}
+
+
+
+.layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.layer-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.layer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.layer-features {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.layer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.layer-actions img {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.layer-actions img:hover {
+  opacity: 1;
+}
+
+.basemap-section {
+  margin-top: 8px;
+}
+
+.basemap-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.basemap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.basemap-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: #f9fafb;
+  cursor: pointer;
+  font-size: 12px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  color: #111827;
+}
+
+.basemap-tile img {
+  width: 50px;
+  height: 50px;
+}
+
+.basemap-tile.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+@media (max-width: 768px) {
+  .left-panel {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px;
+  }
+
+  .basemap-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

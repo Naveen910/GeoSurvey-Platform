@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ScaleControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../../styles/MapViewer/mapmain.css';
+import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
 
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
@@ -14,6 +15,10 @@ const tileLayers = {
   terrain: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
   topographic: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
 };
+
+
+
+
 
 const MapControls = ({ setLatLngZoom }) => {
   const map = useMap();
@@ -40,7 +45,9 @@ const MapControls = ({ setLatLngZoom }) => {
     map.on('moveend', updateInfo);
     updateInfo();
     return () => map.off('moveend', updateInfo);
+
   }, [map, setLatLngZoom]);
+
 
   return (
     <div className="map-controls">
@@ -59,6 +66,26 @@ const MapMain = ({ selectedBasemap }) => {
     zoom: 13,
   });
 
+//Backend Config
+const [geoConfig, setGeoConfig] = useState(null);
+const [visibleLayers, setVisibleLayers] = useState({});
+
+//Fetch Layer Config from Backend
+useEffect(() => {
+  fetch('http://localhost:5000/api/geoserver-config')
+    .then(res => res.json())
+    .then(data => {
+      setGeoConfig(data);
+
+      const initialVisibility = {};
+      data.layers.forEach(l => {
+        initialVisibility[`${l.workspace}:${l.layer}`] = true;
+      });
+      setVisibleLayers(initialVisibility);
+    })
+    .catch(err => console.error('Failed to fetch GeoServer config', err));
+}, []);
+
   return (
     <div className="map-main">
       <MapContainer
@@ -69,6 +96,18 @@ const MapMain = ({ selectedBasemap }) => {
           style={{ height: '100%', width: '100%' }}
       >
         <TileLayer url={tileLayers[selectedBasemap]} />
+
+        {/* Render the GeoServerLayer */}
+        {geoConfig?.layers.map((layers, idx) => (
+          <GeoServerLayer
+            key={idx}
+            geoserverUrl={geoConfig.geoserverUrl}
+            workspace={layers.workspace}
+            layerName={layers.layer}
+            visible={visibleLayers[`${layers.workspace}:${layers.layer}`]}
+          />
+        ))} 
+
         <ScaleControl position="bottomleft" />
         <MapControls setLatLngZoom={setLatLngZoom} />
       </MapContainer>

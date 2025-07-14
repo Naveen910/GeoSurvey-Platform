@@ -4,6 +4,8 @@ import 'leaflet/dist/leaflet.css';
 import '../../styles/MapViewer/mapmain.css';
 import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
 
+
+
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
 import locateIcon from '../../assets/MapViewer/locate.png';
@@ -59,12 +61,41 @@ const MapControls = ({ setLatLngZoom }) => {
   );
 };
 
-const MapMain = ({ selectedBasemap }) => {
+const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [latLngZoom, setLatLngZoom] = useState({
     lat: 17.3850,
     lng: 78.4867,
-    zoom: 13,
+    zoom: 15,
   });
+
+ // Respond to searchQuery prop
+  useEffect(() => {
+    if (!searchQuery) return;
+
+    const coordMatch = searchQuery.match(/^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[3]);
+      setLatLngZoom(prev => ({ ...prev, lat, lng }));
+    } else {
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            setLatLngZoom(prev => ({ ...prev, lat, lng }));
+          } else {
+            alert('No results found');
+          }
+        })
+        .catch(err => {
+          console.error("Geocoding error:", err);
+        });
+    }
+  }, [searchQuery]);
+
+
 
 //Backend Config
 const [geoConfig, setGeoConfig] = useState(null);
@@ -87,7 +118,9 @@ useEffect(() => {
 }, []);
 
   return (
+    
     <div className="map-main">
+
       <MapContainer
           center={[latLngZoom.lat, latLngZoom.lng]}
           zoom={latLngZoom.zoom}
@@ -118,9 +151,11 @@ useEffect(() => {
           Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°
         </div>
         <div>Zoom: {latLngZoom.zoom}</div>
+        
+        </div>
       </div>
-
-    </div>
+    
+    
   );
 };
 

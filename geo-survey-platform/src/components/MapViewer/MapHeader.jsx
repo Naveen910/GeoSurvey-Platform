@@ -18,6 +18,7 @@ const MapHeader = ({ onSearch }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && typeof onSearch === 'function') {
+      console.log("🔍 Search triggered:", searchQuery);
       onSearch(searchQuery);
     }
   };

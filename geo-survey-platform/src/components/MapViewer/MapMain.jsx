@@ -19,6 +19,19 @@ const tileLayers = {
 };
 
 
+const MapUpdater = ({ lat, lng, zoom }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    console.log("🌍 Updating map to:", lat, lng);
+
+    if (lat && lng) {
+      map.setView([lat, lng], zoom);
+    }
+  }, [lat, lng, zoom, map]);
+
+  return null;
+};
 
 
 
@@ -68,9 +81,9 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
     zoom: 15,
   });
 
- // Respond to searchQuery prop
   useEffect(() => {
     if (!searchQuery) return;
+    console.log("📡 Received searchQuery in MapMain:", searchQuery);
 
     const coordMatch = searchQuery.match(/^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/);
     if (coordMatch) {
@@ -128,7 +141,9 @@ useEffect(() => {
           zoomControl={false} // Disable default zoom
           style={{ height: '100%', width: '100%' }}
       >
+        <MapUpdater lat={latLngZoom.lat} lng={latLngZoom.lng} zoom={latLngZoom.zoom} />
         <TileLayer url={tileLayers[selectedBasemap]} />
+        
 
         {/* Render the GeoServerLayer */}
         {geoConfig?.layers.map((layers, idx) => (

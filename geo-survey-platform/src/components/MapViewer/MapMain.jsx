@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, useMap, ScaleControl } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  useMap,
+  ScaleControl,
+  Marker,
+  Popup,
+  Circle
+} from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../../styles/MapViewer/mapmain.css';
 import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
 
-
-
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
 import locateIcon from '../../assets/MapViewer/locate.png';
-import refreshIcon from '../../assets/MapViewer/refresh.png';
+//import refreshIcon from '../../assets/MapViewer/refresh.png';
+import geoIcon from '../../assets/geo.png'; 
+
 
 const tileLayers = {
   streets: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -19,12 +28,17 @@ const tileLayers = {
 };
 
 
+const userLocationIcon = L.icon({
+  iconUrl: geoIcon,
+  iconSize: [24, 24],
+  iconAnchor: [12, 24],
+});
+
+
 const MapUpdater = ({ lat, lng, zoom }) => {
   const map = useMap();
 
   useEffect(() => {
-    console.log("🌍 Updating map to:", lat, lng);
-
     if (lat && lng) {
       map.setView([lat, lng], zoom);
     }
@@ -33,19 +47,17 @@ const MapUpdater = ({ lat, lng, zoom }) => {
   return null;
 };
 
-
-
-const MapControls = ({ setLatLngZoom }) => {
+const MapControls = ({ setLatLngZoom, setUserLocation }) => {
   const map = useMap();
 
   const zoomIn = () => map.zoomIn();
   const zoomOut = () => map.zoomOut();
   const locate = () => map.locate({ setView: true, maxZoom: 16 });
-  const refresh = () => {
+  /*const refresh = () => {
     const current = map.getCenter();
     const zoom = map.getZoom();
     map.setView(current, zoom);
-  };
+  };*/
 
   useEffect(() => {
     const updateInfo = () => {
@@ -57,19 +69,44 @@ const MapControls = ({ setLatLngZoom }) => {
       });
     };
 
+    const handleMapClick = (e) => {
+      const { lat, lng } = e.latlng;
+      setLatLngZoom(prev => ({
+        ...prev,
+        lat: lat.toFixed(4),
+        lng: lng.toFixed(4),
+      }));
+    };
+
+    const handleLocationFound = (e) => {
+      const { lat, lng } = e.latlng;
+      setUserLocation({ lat, lng });
+      setLatLngZoom(prev => ({
+        ...prev,
+        lat: lat.toFixed(4),
+        lng: lng.toFixed(4),
+      }));
+    };
+
     map.on('moveend', updateInfo);
-    updateInfo();
-    return () => map.off('moveend', updateInfo);
+    map.on('click', handleMapClick);
+    map.on('locationfound', handleLocationFound);
 
-  }, [map, setLatLngZoom]);
+    updateInfo(); // on mount
 
+    return () => {
+      map.off('moveend', updateInfo);
+      map.off('click', handleMapClick);
+      map.off('locationfound', handleLocationFound);
+    };
+  }, [map, setLatLngZoom, setUserLocation]);
 
   return (
     <div className="map-controls">
       <button onClick={zoomIn}><img src={zoomInIcon} alt="Zoom In" /></button>
       <button onClick={zoomOut}><img src={zoomOutIcon} alt="Zoom Out" /></button>
       <button onClick={locate}><img src={locateIcon} alt="Locate Me" /></button>
-      <button onClick={refresh}><img src={refreshIcon} alt="Refresh" /></button>
+      {/* <button onClick={refresh}><img src={refreshIcon} alt="Refresh" /></button> */}
     </div>
   );
 };
@@ -78,12 +115,14 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [latLngZoom, setLatLngZoom] = useState({
     lat: 17.3850,
     lng: 78.4867,
-    zoom: 15,
+    zoom: 18,
   });
 
+  const [userLocation, setUserLocation] = useState(null);
+
+  // Search effect
   useEffect(() => {
     if (!searchQuery) return;
-    console.log("📡 Received searchQuery in MapMain:", searchQuery);
 
     const coordMatch = searchQuery.match(/^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/);
     if (coordMatch) {
@@ -108,69 +147,75 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
     }
   }, [searchQuery]);
 
+  // GeoServer layer config
+  const [geoConfig, setGeoConfig] = useState(null);
+  const [visibleLayers, setVisibleLayers] = useState({});
 
+  useEffect(() => {
+    fetch('http://localhost:5000/api/geoserver-config')
+      .then(res => res.json())
+      .then(data => {
+        setGeoConfig(data);
 
-//Backend Config
-const [geoConfig, setGeoConfig] = useState(null);
-const [visibleLayers, setVisibleLayers] = useState({});
-
-//Fetch Layer Config from Backend
-useEffect(() => {
-  fetch('http://localhost:5000/api/geoserver-config')
-    .then(res => res.json())
-    .then(data => {
-      setGeoConfig(data);
-
-      const initialVisibility = {};
-      data.layers.forEach(l => {
-        initialVisibility[`${l.workspace}:${l.layer}`] = true;
-      });
-      setVisibleLayers(initialVisibility);
-    })
-    .catch(err => console.error('Failed to fetch GeoServer config', err));
-}, []);
+        const initialVisibility = {};
+        data.layers.forEach(l => {
+          initialVisibility[`${l.workspace}:${l.layer}`] = true;
+        });
+        setVisibleLayers(initialVisibility);
+      })
+      .catch(err => console.error('Failed to fetch GeoServer config', err));
+  }, []);
 
   return (
-    
     <div className="map-main">
-
       <MapContainer
-          center={[latLngZoom.lat, latLngZoom.lng]}
-          zoom={latLngZoom.zoom}
-          scrollWheelZoom
-          zoomControl={false} // Disable default zoom
-          style={{ height: '100%', width: '100%' }}
+        center={[latLngZoom.lat, latLngZoom.lng]}
+        zoom={latLngZoom.zoom}
+        scrollWheelZoom
+        zoomControl={false}
+        style={{ height: '100%', width: '100%' }}
       >
         <MapUpdater lat={latLngZoom.lat} lng={latLngZoom.lng} zoom={latLngZoom.zoom} />
         <TileLayer url={tileLayers[selectedBasemap]} />
-        
 
-        {/* Render the GeoServerLayer */}
-        {geoConfig?.layers.map((layers, idx) => (
+        {geoConfig?.layers.map((layer, idx) => (
           <GeoServerLayer
             key={idx}
             geoserverUrl={geoConfig.geoserverUrl}
-            workspace={layers.workspace}
-            layerName={layers.layer}
-            visible={visibleLayers[`${layers.workspace}:${layers.layer}`]}
+            workspace={layer.workspace}
+            layerName={layer.layer}
+            visible={visibleLayers[`${layer.workspace}:${layer.layer}`]}
           />
-        ))} 
+        ))}
+
+        {/* Location marker and circle */}
+        {userLocation && (
+          <>
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
+              <Popup>You are here</Popup>
+            </Marker>
+            <Circle
+              center={[userLocation.lat, userLocation.lng]}
+              radius={50}
+              pathOptions={{
+                fillColor: '#2196f3',
+                color: '#2196f3',
+                fillOpacity: 0.2,
+              }}
+            />
+          </>
+        )}
 
         <ScaleControl position="bottomleft" />
-        <MapControls setLatLngZoom={setLatLngZoom} />
+        <MapControls setLatLngZoom={setLatLngZoom} setUserLocation={setUserLocation} />
       </MapContainer>
 
       {/* Bottom Right Info Box */}
       <div className="map-info-box">
-        <div>
-          Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°
-        </div>
+        <div>Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°</div>
         <div>Zoom: {latLngZoom.zoom}</div>
-        
-        </div>
       </div>
-    
-    
+    </div>
   );
 };
 

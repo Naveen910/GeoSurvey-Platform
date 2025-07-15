@@ -6,7 +6,7 @@ import {
   ScaleControl,
   Marker,
   Popup,
-  Circle
+  Circle,
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,9 +16,7 @@ import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
 import locateIcon from '../../assets/MapViewer/locate.png';
-//import refreshIcon from '../../assets/MapViewer/refresh.png';
-import geoIcon from '../../assets/geo.png'; 
-
+import geoIcon from '../../assets/geo.png';
 
 const tileLayers = {
   streets: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -27,13 +25,12 @@ const tileLayers = {
   topographic: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
 };
 
-
-const userLocationIcon = L.icon({
-  iconUrl: geoIcon,
-  iconSize: [24, 24],
-  iconAnchor: [12, 24],
-});
-
+const createGeoIcon = () =>
+  L.icon({
+    iconUrl: geoIcon,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+  });
 
 const MapUpdater = ({ lat, lng, zoom }) => {
   const map = useMap();
@@ -47,17 +44,12 @@ const MapUpdater = ({ lat, lng, zoom }) => {
   return null;
 };
 
-const MapControls = ({ setLatLngZoom, setUserLocation }) => {
+const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => {
   const map = useMap();
 
   const zoomIn = () => map.zoomIn();
   const zoomOut = () => map.zoomOut();
   const locate = () => map.locate({ setView: true, maxZoom: 16 });
-  /*const refresh = () => {
-    const current = map.getCenter();
-    const zoom = map.getZoom();
-    map.setView(current, zoom);
-  };*/
 
   useEffect(() => {
     const updateInfo = () => {
@@ -76,6 +68,9 @@ const MapControls = ({ setLatLngZoom, setUserLocation }) => {
         lat: lat.toFixed(4),
         lng: lng.toFixed(4),
       }));
+
+      setUserLocation(null);
+      setClickedLocation({ lat, lng });
     };
 
     const handleLocationFound = (e) => {
@@ -92,21 +87,20 @@ const MapControls = ({ setLatLngZoom, setUserLocation }) => {
     map.on('click', handleMapClick);
     map.on('locationfound', handleLocationFound);
 
-    updateInfo(); // on mount
+    updateInfo();
 
     return () => {
       map.off('moveend', updateInfo);
       map.off('click', handleMapClick);
       map.off('locationfound', handleLocationFound);
     };
-  }, [map, setLatLngZoom, setUserLocation]);
+  }, [map, setLatLngZoom, setUserLocation, setClickedLocation]);
 
   return (
     <div className="map-controls">
       <button onClick={zoomIn}><img src={zoomInIcon} alt="Zoom In" /></button>
       <button onClick={zoomOut}><img src={zoomOutIcon} alt="Zoom Out" /></button>
       <button onClick={locate}><img src={locateIcon} alt="Locate Me" /></button>
-      {/* <button onClick={refresh}><img src={refreshIcon} alt="Refresh" /></button> */}
     </div>
   );
 };
@@ -119,8 +113,10 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   });
 
   const [userLocation, setUserLocation] = useState(null);
+  const [clickedLocation, setClickedLocation] = useState(null);
 
-  // Search effect
+  const geoIconInstance = createGeoIcon();
+
   useEffect(() => {
     if (!searchQuery) return;
 
@@ -147,7 +143,6 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
     }
   }, [searchQuery]);
 
-  // GeoServer layer config
   const [geoConfig, setGeoConfig] = useState(null);
   const [visibleLayers, setVisibleLayers] = useState({});
 
@@ -156,7 +151,6 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
       .then(res => res.json())
       .then(data => {
         setGeoConfig(data);
-
         const initialVisibility = {};
         data.layers.forEach(l => {
           initialVisibility[`${l.workspace}:${l.layer}`] = true;
@@ -188,10 +182,15 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
           />
         ))}
 
-        {/* Location marker and circle */}
+        {clickedLocation && (
+          <Marker position={[clickedLocation.lat, clickedLocation.lng]} icon={geoIconInstance}>
+            <Popup>Clicked Location</Popup>
+          </Marker>
+        )}
+
         {userLocation && (
           <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={geoIconInstance}>
               <Popup>You are here</Popup>
             </Marker>
             <Circle
@@ -207,10 +206,13 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
         )}
 
         <ScaleControl position="bottomleft" />
-        <MapControls setLatLngZoom={setLatLngZoom} setUserLocation={setUserLocation} />
+        <MapControls
+          setLatLngZoom={setLatLngZoom}
+          setUserLocation={setUserLocation}
+          setClickedLocation={setClickedLocation}
+        />
       </MapContainer>
 
-      {/* Bottom Right Info Box */}
       <div className="map-info-box">
         <div>Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°</div>
         <div>Zoom: {latLngZoom.zoom}</div>

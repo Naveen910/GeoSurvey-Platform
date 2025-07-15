@@ -105,6 +105,49 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
   );
 };
 
+// 🔽 POPUP COMPONENT DIRECTLY ON MAP CLICK
+const ClickPopup = ({ clickedLocation }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!clickedLocation) return;
+
+    const { lat, lng } = clickedLocation;
+
+    const popup = L.popup()
+      .setLatLng([lat, lng])
+      .setContent(`
+        <div style="font-size: 13px">
+          <strong>Clicked Location</strong><br/>
+          Lat: ${lat.toFixed(4)}<br/>
+          Lng: ${lng.toFixed(4)}<br/>
+          <button style="
+            margin-top: 6px;
+            padding: 4px 8px;
+            font-size: 13px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          "
+          onclick="window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}', '_blank')"
+          >
+            Open Street View
+          </button>
+        </div>
+      `);
+
+    popup.openOn(map);
+
+    return () => {
+      map.closePopup(popup);
+    };
+  }, [clickedLocation, map]);
+
+  return null;
+};
+
 const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [latLngZoom, setLatLngZoom] = useState({
     lat: 17.3850,
@@ -182,11 +225,8 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
           />
         ))}
 
-        {clickedLocation && (
-          <Marker position={[clickedLocation.lat, clickedLocation.lng]} icon={geoIconInstance}>
-            <Popup>Clicked Location</Popup>
-          </Marker>
-        )}
+        {/* ✅ Show popup directly on click */}
+        {clickedLocation && <ClickPopup clickedLocation={clickedLocation} />}
 
         {userLocation && (
           <>

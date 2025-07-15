@@ -105,7 +105,7 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
   );
 };
 
-// 🔽 POPUP COMPONENT DIRECTLY ON MAP CLICK
+
 const ClickPopup = ({ clickedLocation }) => {
   const map = useMap();
 
@@ -150,9 +150,9 @@ const ClickPopup = ({ clickedLocation }) => {
 
 const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [latLngZoom, setLatLngZoom] = useState({
-    lat: 17.3850,
+    lat: 17.4021,
     lng: 78.4867,
-    zoom: 18,
+    zoom: 14,
   });
 
   const [userLocation, setUserLocation] = useState(null);

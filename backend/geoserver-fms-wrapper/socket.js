@@ -10,7 +10,7 @@ function setupWebSocket(server) {
       const parsed = JSON.parse(msg);
       console.log('Received:', parsed);
 
-      // Echo/broadcast the update
+      
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({ event: 'fms-update', payload: parsed }));

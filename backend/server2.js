@@ -40,44 +40,7 @@ async function getLatLonFromGeoServer(featureId) {
   return coords; // [lon, lat]
 }
 
-/**
- * Step 2: Generate Google Street View URL from lat/lon
- */
-function getStreetViewURL(lat, lon) {
-  return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}`;
-}
 
-/**
- * Optional: Calculate polygon centroid
- */
-function getPolygonCentroid(coordinates) {
-  let x = 0, y = 0, len = coordinates.length;
-  coordinates.forEach(([lon, lat]) => {
-    x += lon;
-    y += lat;
-  });
-  return [x / len, y / len];
-}
-
-/**
- * API Route: /feature/:id/streetview
- */
-app.get('/feature/:id/streetview', async (req, res) => {
-  try {
-    const featureId = req.params.id;
-    const [lon, lat] = await getLatLonFromGeoServer(featureId);
-    const url = getStreetViewURL(lat, lon);
-
-    res.json({
-      featureId,
-      lat,
-      lon,
-      streetViewUrl: url
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);

@@ -8,27 +8,28 @@
 .map-viewer-body {
   display: flex;
   flex: 1;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
+  flex-direction: row;
+  height: 100%;
 }
 
 @media (max-width: 768px) {
   .map-viewer-body {
     flex-direction: column;
+    height: 100%;
+    width: 100%;
   }
-
-  .map-main {
-  flex: 1;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-}
 
   .left-panel {
-    height: auto;
-    order: -1; /* if you want it to appear above the map */
+    flex-shrink: 0;
+    width: 100%;
+  
   }
-}
+  .basemap-tile {
+    width: 100%;
+    height: 160px;
+  }
+
+
+  }
+
+

@@ -12,6 +12,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../../styles/MapViewer/mapmain.css';
 import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
+import FeatureOverlay from '../../components/MapViewer/FeatureOverlay';
+import FmsPanel from '../../components/MapViewer/FmsPanel';
 
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
@@ -105,7 +107,6 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
   );
 };
 
-
 const ClickPopup = ({ clickedLocation }) => {
   const map = useMap();
 
@@ -117,22 +118,12 @@ const ClickPopup = ({ clickedLocation }) => {
     const popup = L.popup()
       .setLatLng([lat, lng])
       .setContent(`
-        <div style="font-size: 13px">
+        <div class="click-popup">
           <strong>Clicked Location</strong><br/>
           Lat: ${lat.toFixed(4)}<br/>
           Lng: ${lng.toFixed(4)}<br/>
-          <button style="
-            margin-top: 6px;
-            padding: 4px 8px;
-            font-size: 13px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-          "
-          onclick="window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}', '_blank')"
-          >
+          <button class="street-view-btn"
+            onclick="window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}', '_blank')">
             Open Street View
           </button>
         </div>
@@ -157,6 +148,7 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
 
   const [userLocation, setUserLocation] = useState(null);
   const [clickedLocation, setClickedLocation] = useState(null);
+  const [selectedFeatureID, setSelectedFeatureID] = useState(null);
 
   const geoIconInstance = createGeoIcon();
 
@@ -204,16 +196,19 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   }, []);
 
   return (
-    <div className="map-main">
+    <div className="map-main flex">
+      <div className="flex-grow relative">
+
       <MapContainer
         center={[latLngZoom.lat, latLngZoom.lng]}
         zoom={latLngZoom.zoom}
         scrollWheelZoom
         zoomControl={false}
-        style={{ height: '100%', width: '100%' }}
+        className="leaflet-container"
       >
-        <MapUpdater lat={latLngZoom.lat} lng={latLngZoom.lng} zoom={latLngZoom.zoom} />
         <TileLayer url={tileLayers[selectedBasemap]} />
+        <MapUpdater lat={latLngZoom.lat} lng={latLngZoom.lng} zoom={latLngZoom.zoom} />
+        
 
         {geoConfig?.layers.map((layer, idx) => (
           <GeoServerLayer
@@ -225,7 +220,17 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
           />
         ))}
 
-        {/* ✅ Show popup directly on click */}
+        {geoConfig?.layers.map((layer, idx) => (
+            <FeatureOverlay
+              key={`wfs-${idx}`}
+              workspace={layer.workspace}
+              layerName={layer.layer}
+              onFeatureClick={(fid) => setSelectedFeatureID(fid)}
+            />
+          ))}
+
+
+
         {clickedLocation && <ClickPopup clickedLocation={clickedLocation} />}
 
         {userLocation && (
@@ -257,6 +262,10 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
         <div>Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°</div>
         <div>Zoom: {latLngZoom.zoom}</div>
       </div>
+    </div>
+      {selectedFeatureID && (
+        <FmsPanel featureID={selectedFeatureID} />
+      )}
     </div>
   );
 };

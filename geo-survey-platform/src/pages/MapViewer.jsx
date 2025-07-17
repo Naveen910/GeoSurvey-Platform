@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import MapHeader from '../components/MapViewer/MapHeader';
 import LeftPanel from '../components/MapViewer/LeftPanel';
 import MapMain from '../components/MapViewer/MapMain';
+
 import '../styles/MapViewer/mapviewer.css';
 
 const MapViewer = () => {

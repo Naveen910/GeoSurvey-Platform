@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/fms', fmsRoutes);
 
-// MongoDB connection
+
 mongoose.connect('mongodb://65.1.101.129:27017/geoserver_fms', {
   useNewUrlParser: true,
   useUnifiedTopology: true

@@ -263,9 +263,15 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
         <div>Zoom: {latLngZoom.zoom}</div>
       </div>
     </div>
+
+
       {selectedFeatureID && (
-        <FmsPanel featureID={selectedFeatureID} />
+        <FmsPanel
+          featureID={selectedFeatureID}
+          onClose={() => setSelectedFeatureID(null)}
+        />
       )}
+
     </div>
   );
 };

@@ -14,6 +14,7 @@ import satelliteIcon from '../../assets/MapViewer/satellite.png';
 import terrainIcon from '../../assets/MapViewer/terrain.png';
 import topoIcon from '../../assets/MapViewer/topo.png';
 
+
 const layers = [
   { name: "Survey Points", features: 245, visible: true },
   { name: "Property Boundaries", features: 89, visible: true },
@@ -29,12 +30,14 @@ const basemaps = [
   { name: 'topographic', icon: topoIcon },
 ];
 
-const LeftPanel = ({ selectedBasemap, setBasemap }) => {
+const LeftPanel = ({ selectedBasemap, setBasemap  }) => {
   const [activeTab, setActiveTab] = React.useState('Layers');
 
   return (
     <div className="left-panel">
-      {/* Tabs */}
+
+        <>
+      
       <div className="tabs">
         <button
           className={`tab ${activeTab === 'Layers' ? 'active' : ''}`}
@@ -51,6 +54,8 @@ const LeftPanel = ({ selectedBasemap, setBasemap }) => {
           Tools
         </button>
       </div>
+
+
 
       {activeTab === 'Layers' && (
         <>
@@ -86,11 +91,14 @@ const LeftPanel = ({ selectedBasemap, setBasemap }) => {
   </button>
 ))}
             </div>
-          </div>
+              </div>
+            </>
+          )}
         </>
-      )}
+    
     </div>
   );
 };
+
 
 export default LeftPanel;

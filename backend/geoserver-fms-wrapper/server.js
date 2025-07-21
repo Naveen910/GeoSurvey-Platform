@@ -19,5 +19,5 @@ mongoose.connect('mongodb://65.1.101.129:27017/geoserver_fms', {
   useUnifiedTopology: true
 }).then(() => {
   console.log('✅ MongoDB connected');
-  server.listen(3000, () => console.log('🚀 Server running on http://65.1.101.129:3000'));
+  server.listen(3000, '0.0.0.0', () => console.log('🚀 Server running on http://65.1.101.129:3000'));
 }).catch(console.error);

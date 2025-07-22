@@ -14,6 +14,8 @@ import '../../styles/MapViewer/mapmain.css';
 import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
 import FeatureOverlay from '../../components/MapViewer/FeatureOverlay';
 import FmsPanel from '../../components/MapViewer/FmsPanel';
+import StreetViewPopup from "../../components/MapViewer/StreetViewPopup";
+
 
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
@@ -107,37 +109,28 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
   );
 };
 
-const ClickPopup = ({ clickedLocation }) => {
-  const map = useMap();
+const ClickPopup = ({ clickedLocation, setStreetViewCoords }) => {
+  if (!clickedLocation) return null;
 
-  useEffect(() => {
-    if (!clickedLocation) return;
+  const { lat, lng } = clickedLocation;
 
-    const { lat, lng } = clickedLocation;
-
-    const popup = L.popup()
-      .setLatLng([lat, lng])
-      .setContent(`
-        <div class="click-popup">
-          <strong>Clicked Location</strong><br/>
-          Lat: ${lat.toFixed(4)}<br/>
-          Lng: ${lng.toFixed(4)}<br/>
-          <button class="street-view-btn"
-            onclick="window.open('https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}', '_blank')">
-            Open Street View
+  return (
+    <Marker position={[lat, lng]}>
+      <Popup>
+        <div>
+          <p>Coordinates: {lat.toFixed(6)}, {lng.toFixed(6)}</p>
+          <button
+            onClick={() => setStreetViewCoords({ lat, lng })}
+            className="popup-button"
+          >
+            View Street
           </button>
         </div>
-      `);
-
-    popup.openOn(map);
-
-    return () => {
-      map.closePopup(popup);
-    };
-  }, [clickedLocation, map]);
-
-  return null;
+      </Popup>
+    </Marker>
+  );
 };
+
 
 const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [latLngZoom, setLatLngZoom] = useState({
@@ -149,6 +142,8 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [clickedLocation, setClickedLocation] = useState(null);
   const [selectedFeatureID, setSelectedFeatureID] = useState(null);
+  const [streetViewCoords, setStreetViewCoords] = useState(null);
+
 
   const geoIconInstance = createGeoIcon();
 
@@ -182,7 +177,7 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [visibleLayers, setVisibleLayers] = useState({});
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/geoserver-config')
+    fetch('http://65.1.101.129:5000/api/geoserver-config')
       .then(res => res.json())
       .then(data => {
         setGeoConfig(data);
@@ -231,7 +226,10 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
 
 
 
-        {clickedLocation && <ClickPopup clickedLocation={clickedLocation} />}
+        {clickedLocation && <ClickPopup 
+          clickedLocation={clickedLocation} 
+          setStreetViewCoords={setStreetViewCoords} 
+        />}
 
         {userLocation && (
           <>
@@ -250,12 +248,24 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
           </>
         )}
 
+        {streetViewCoords && (
+  <StreetViewPopup
+    lat={streetViewCoords.lat}
+    lng={streetViewCoords.lng}
+    onClose={() => setStreetViewCoords(null)}
+  />
+)}
+
+
         <ScaleControl position="bottomleft" />
         <MapControls
           setLatLngZoom={setLatLngZoom}
           setUserLocation={setUserLocation}
           setClickedLocation={setClickedLocation}
         />
+
+        
+
       </MapContainer>
 
       <div className="map-info-box">

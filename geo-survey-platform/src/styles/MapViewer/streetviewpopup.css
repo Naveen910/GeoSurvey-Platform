@@ -1,0 +1,41 @@
+
+.streetview-modal {
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  width: 80vw;
+  height: 80vh;
+  background: white;
+  z-index: 10000;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.streetview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f4f4f4;
+  border-bottom: 1px solid #ccc;
+}
+
+.streetview-header h4 {
+  margin: 0;
+}
+
+.streetview-header button {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.streetview-modal iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}

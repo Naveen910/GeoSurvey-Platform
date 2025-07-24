@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/systemoverview.css';
 import arrowIcon from '../assets/SystemOverview.png';
-
-const stats = [
-  { title: 'Total Maps', value: 24 },
-  { title: 'Data Layers', value: 156 },
-  { title: 'Storage Used', value: '2.4 GB' },
-  { title: 'Active Users', value: 8 },
-];
+import axios from 'axios';
 
 const SystemOverview = () => {
+  const [stats, setStats] = useState([
+    { title: 'Free Physical Memory', value: '—' },
+    { title: 'Data Layers', value: '—' },
+    { title: 'Memory Usage', value: '—' },
+    { title: 'Free Space', value: '—' },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get('http://65.1.101.129:3000/api/systemoverview/overview');
+        const data = res.data;
+
+        setStats([
+          { title: 'Free Physical Memory', value: data.freePhysicalMemory || 'N/A' },
+          { title: 'Data Layers', value: data.totalLayers || 'N/A' },
+          { title: 'Memory Usage', value: data.memoryUsage || 'N/A' },
+          { title: 'Free Space', value: data.freeSpace || 'N/A' },
+        ]);
+      } catch (error) {
+        console.error('❌ Failed to load system overview:', error.message);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <section className="system-overview-wrapper">
       <h2 className="system-overview-title">System Overview</h2>

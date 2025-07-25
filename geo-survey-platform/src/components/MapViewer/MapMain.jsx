@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef   } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -50,12 +50,19 @@ const MapUpdater = ({ lat, lng, zoom }) => {
 
 const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => {
   const map = useMap();
+  const controlRef = useRef();
 
   const zoomIn = () => map.zoomIn();
   const zoomOut = () => map.zoomOut();
   const locate = () => map.locate({ setView: true, maxZoom: 16 });
 
+
   useEffect(() => {
+  if (controlRef.current) {
+    L.DomEvent.disableClickPropagation(controlRef.current);
+    L.DomEvent.disableScrollPropagation(controlRef.current);
+  }
+
     const updateInfo = () => {
       const center = map.getCenter();
       setLatLngZoom({
@@ -72,7 +79,7 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
         lat: lat.toFixed(4),
         lng: lng.toFixed(4),
       }));
-
+      
       setUserLocation(null);
       setClickedLocation({ lat, lng });
     };
@@ -101,7 +108,8 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
   }, [map, setLatLngZoom, setUserLocation, setClickedLocation]);
 
   return (
-    <div className="map-controls">
+    <div
+      className="map-controls" ref={controlRef}>
       <button onClick={zoomIn}><img src={zoomInIcon} alt="Zoom In" /></button>
       <button onClick={zoomOut}><img src={zoomOutIcon} alt="Zoom Out" /></button>
       <button onClick={locate}><img src={locateIcon} alt="Locate Me" /></button>
@@ -109,27 +117,37 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
   );
 };
 
-const ClickPopup = ({ clickedLocation, setStreetViewCoords }) => {
-  if (!clickedLocation) return null;
 
+
+const ClickPopup = ({ clickedLocation, setStreetViewCoords, setClickedLocation, geoIcon  }) => {
+  
+
+  if (!clickedLocation) return null;
   const { lat, lng } = clickedLocation;
 
   return (
-    <Marker position={[lat, lng]}>
-      <Popup>
-        <div>
-          <p>Coordinates: {lat.toFixed(6)}, {lng.toFixed(6)}</p>
-          <button
-            onClick={() => setStreetViewCoords({ lat, lng })}
-            className="popup-button"
-          >
-            View Street
-          </button>
-        </div>
-      </Popup>
+    <Marker position={[lat, lng]} icon={geoIcon} >
+    <Popup
+      position={[lat, lng]}
+      offset={[0, -24]}
+      onClose={() => setClickedLocation(null)}
+      autoPan={true}
+    >
+      <div className="popup-wrapper">
+        <p>Coordinates: {lat.toFixed(6)}, {lng.toFixed(6)}</p>
+        <button
+          onClick={() => setStreetViewCoords({ lat, lng })}
+          className="popup-button"
+        >
+          View Street
+        </button>
+      </div>
+    </Popup>
     </Marker>
   );
 };
+
+
 
 
 const MapMain = ({ selectedBasemap, searchQuery }) => {
@@ -145,7 +163,7 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [streetViewCoords, setStreetViewCoords] = useState(null);
 
 
-  const geoIconInstance = createGeoIcon();
+  const geoIconInstance = useMemo(createGeoIcon, []);
 
   useEffect(() => {
     if (!searchQuery) return;
@@ -226,10 +244,15 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
 
 
 
-        {clickedLocation && <ClickPopup 
-          clickedLocation={clickedLocation} 
-          setStreetViewCoords={setStreetViewCoords} 
-        />}
+            {clickedLocation && (
+                <ClickPopup 
+                  clickedLocation={clickedLocation} 
+                  setStreetViewCoords={setStreetViewCoords} 
+                  setClickedLocation={setClickedLocation}
+                  geoIcon={geoIconInstance}
+                />
+            )}
+
 
         {userLocation && (
           <>

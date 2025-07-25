@@ -27,11 +27,9 @@ const Header = () => {
           <img src={settingsIcon} alt="Settings" className="header-icon" />
         </button>
 
-        <div className="user-info">
-          <span className="user-name">John Surveyor</span>
-          <div className="user-avatar">JS</div>
+        
         </div>
-      </div>
+      
     </header>
   );
 };

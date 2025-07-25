@@ -1,7 +1,7 @@
 .map-viewer-page {
   display: flex;
   flex-direction: column;
-  height: 90vh;
+  height: 100vh; /* Full height always */
 }
 
 .map-viewer-body {
@@ -9,26 +9,54 @@
   flex: 1;
   flex-direction: row;
   height: 100%;
+  width: 100%;
 }
+
+
 
 @media (max-width: 768px) {
   .map-viewer-body {
+    display: flex;
     flex-direction: column;
-    height: 100%;
     width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
   }
 
   .left-panel {
+    width: 100%;
+    height: 40vh; /* Fixed height for left panel on mobile */
+    min-height: 200px;
+    overflow-y: auto;
+    z-index: 2;
     flex-shrink: 0;
+    background: white;
+  }
+
+  .map-main {
     width: 100%;
+    height: 60vh; /* Remaining height for map */
+    z-index: 1;
+    position: relative;
+    flex-grow: 1;
+  }
+
+  .leaflet-container {
+    height: 40vh;
+  }
+}
+
+/* Add touch-friendly interactions for mobile */
+@media (hover: none) {
+  .map-controls button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+  }
   
+  .popup-wrapper button {
+    min-height: 44px;
+    padding: 10px 16px;
   }
-  .basemap-tile {
-    width: 100%;
-    height: 160px;
-  }
-
-
-  }
-
-
+}

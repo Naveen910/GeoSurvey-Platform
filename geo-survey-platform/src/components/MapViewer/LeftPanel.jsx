@@ -9,6 +9,14 @@ import hiddenIcon from '../../assets/MapViewer/closedeye.png';
 import pencilIcon from '../../assets/MapViewer/pencil.png';
 import gearIcon from '../../assets/settings.png';
 
+import pointIcon from '../../assets/MapViewer/point.png';
+import lineIcon from '../../assets/MapViewer/line.png';
+import polygonIcon from '../../assets/MapViewer/polygon.png';
+import circleIcon from '../../assets/MapViewer/circle.png';
+import freehandIcon from '../../assets/MapViewer/freehand.png';
+import measureIcon from '../../assets/MapViewer/measure.png';
+
+
 import streetsIcon from '../../assets/MapViewer/streets.png';
 import satelliteIcon from '../../assets/MapViewer/satellite.png';
 import terrainIcon from '../../assets/MapViewer/terrain.png';
@@ -76,6 +84,7 @@ const LeftPanel = ({ selectedBasemap, setBasemap  }) => {
             ))}
           </div>
 
+
           {/* Basemaps */}
           <div className="basemap-section">
             <div className="basemap-title">Basemaps</div>
@@ -94,9 +103,39 @@ const LeftPanel = ({ selectedBasemap, setBasemap  }) => {
               </div>
             </>
           )}
+
+
+          {activeTab === 'Tools' && (
+            <div className="tools-tab">
+              {/* Drawing Tools */}
+              <div className="tool-section">
+                <div className="tool-title">Drawing Tools</div>
+                <div className="tool-grid">
+                  <button className="tool-btn"><img src={pointIcon} alt="Point" />Point</button>
+                  <button className="tool-btn"><img src={lineIcon} alt="Line" />Line</button>
+                  <button className="tool-btn"><img src={polygonIcon} alt="Polygon" />Polygon</button>
+                  <button className="tool-btn"><img src={circleIcon} alt="Circle" />Circle</button>
+                  <button className="tool-btn"><img src={freehandIcon} alt="Freehand" />Freehand</button>
+                </div>
+              </div>
+                    
+              {/* Measurement Tools */}
+              <div className="tool-section">
+                <div className="tool-title">Measurement</div>
+                <div className="measurement-grid">
+                  <button className="tool-btn full-width"><img src={measureIcon} alt="Measure Distance" />Measure Distance</button>
+                  <button className="tool-btn full-width"><img src={measureIcon} alt="Measure Area" />Measure Area</button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
     
     </div>
+
+
+
+            
   );
 };
 

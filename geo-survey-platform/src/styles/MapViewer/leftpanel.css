@@ -29,7 +29,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #fff;
+  background: #ffffff;
   border: none;
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -50,13 +50,25 @@
 }
 
 .layer-card {
+  font-size: 13px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f9fafb;
+  background: #ffffff;
   padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.layer-card:active {
+  border-color: #2563eb;
+  background: #ffffff;
+}
+
+.layer-card:hover {
+  background-color: #f5f5f5;
+  border-color: #2196f3;
 }
 
 .layer-title {
@@ -112,9 +124,9 @@
   justify-content: center;
   gap: 16px;
   padding: 10px;
-  border: 2px solid transparent;
+  border: 1px solid #e0e0e0;
   border-radius: 10px;
-  background: #E5E7EB;
+  background: #ffffff;
   cursor: pointer;
   font-size: 12px;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -127,6 +139,80 @@
 }
 
 .basemap-tile.active {
+  border-color: #2196f3;
+  background: #f5f5f5;
+}
+
+
+.tool-section {
+  margin-bottom: 2rem;
+}
+
+.tool-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 0.5rem;
+  background-color: #ffffff;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.measurement-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 14px;
+}
+
+
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 130px;
+  height: 70px;
+  font-size: 13px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tool-btn.active {
   border-color: #2563eb;
   background: #ffffff;
+}
+
+.tool-btn:hover {
+  background-color: #f5f5f5;
+  border-color: #2196f3;
+}
+
+.tool-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+
+
+.tool-btn.full-width {
+  width: 100%;
+  height: 40px;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding-left: 0.75rem;
+}
+
+.tool-btn.full-width img {
+  margin-right: 0.5rem;
+  width: 18px;
+  height: 18px;
 }

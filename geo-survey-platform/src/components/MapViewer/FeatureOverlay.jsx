@@ -1,10 +1,9 @@
-// components/MapViewer/FeatureOverlay.jsx
 import { useEffect, useState } from 'react';
-import { GeoJSON, useMap } from 'react-leaflet';
+import { GeoJSON } from 'react-leaflet';
 import axios from 'axios';
 
 const FeatureOverlay = ({ workspace, layerName, onFeatureClick }) => {
-  const map = useMap();
+  
   const [features, setFeatures] = useState([]);
 
   useEffect(() => {

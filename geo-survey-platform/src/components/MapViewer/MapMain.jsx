@@ -20,7 +20,7 @@ import StreetViewPopup from "../../components/MapViewer/StreetViewPopup";
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
 import zoomOutIcon from '../../assets/MapViewer/zoomout.png';
 import locateIcon from '../../assets/MapViewer/locate.png';
-import geoIcon from '../../assets/geo.png';
+import geoIcon from '../../assets/MapViewer/geopointer.png';
 
 const tileLayers = {
   streets: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -32,7 +32,7 @@ const tileLayers = {
 const createGeoIcon = () =>
   L.icon({
     iconUrl: geoIcon,
-    iconSize: [24, 24],
+    iconSize: [24, 26],
     iconAnchor: [12, 24],
   });
 
@@ -261,7 +261,7 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
             </Marker>
             <Circle
               center={[userLocation.lat, userLocation.lng]}
-              radius={50}
+              radius={30}
               pathOptions={{
                 fillColor: '#2196f3',
                 color: '#2196f3',

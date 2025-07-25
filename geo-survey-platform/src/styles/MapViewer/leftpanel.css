@@ -122,8 +122,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 10px;
+  gap: 8px;
+  padding: 20px;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
   background: #ffffff;
@@ -134,8 +134,8 @@
 }
 
 .basemap-tile img {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
 }
 
 .basemap-tile.active {
@@ -175,7 +175,6 @@
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  width: 130px;
   height: 70px;
   font-size: 13px;
   background: white;
@@ -196,8 +195,8 @@
 }
 
 .tool-btn img {
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   object-fit: contain;
 }
 

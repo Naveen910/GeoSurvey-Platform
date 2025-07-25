@@ -13,6 +13,7 @@
 
 /* Tabs + Tools Wrapper */
 .content-controls {
+  background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -23,6 +24,7 @@
 
 /* Tabs */
 .tabs {
+  border-bottom: none;
   display: flex;
   gap: 8px;
 }
@@ -38,7 +40,9 @@
 
 .tab-button.active {
   background-color: #2563eb;
-  color: white;
+  color: #ffffff;
+  font-weight: bold;
+
 }
 
 /* Tools: Search + Toggle */

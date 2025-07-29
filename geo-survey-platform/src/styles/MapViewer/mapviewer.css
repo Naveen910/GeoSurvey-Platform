@@ -1,7 +1,7 @@
 .map-viewer-page {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Full height always */
+  height: 100vh; 
 }
 
 .map-viewer-body {
@@ -15,6 +15,7 @@
 
 
 @media (max-width: 480px) {
+
   .map-viewer-body {
     display: flex;
     flex-direction: column;

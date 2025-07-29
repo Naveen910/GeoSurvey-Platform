@@ -16,6 +16,7 @@ const MapViewer = () => {
   return (
     <div className="map-viewer-page">
       <MapHeader onSearch={handleSearchQuery} />
+      
       <div className="map-viewer-body">
         <LeftPanel 
         selectedBasemap={basemap} 

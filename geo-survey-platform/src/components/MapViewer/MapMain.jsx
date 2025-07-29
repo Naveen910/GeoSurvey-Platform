@@ -215,6 +215,7 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
       <MapContainer
         center={[latLngZoom.lat, latLngZoom.lng]}
         zoom={latLngZoom.zoom}
+      
         scrollWheelZoom
         zoomControl={false}
         className="leaflet-container"

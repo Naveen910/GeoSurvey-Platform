@@ -25,7 +25,6 @@
 
 /* Tabs */
 .tabs {
-  border-bottom: none;
   display: flex;
   gap: 8px;
 }
@@ -40,6 +39,7 @@
 }
 
 .tab-button.active {
+  border-bottom: none;
   background-color: #2563eb;
   color: #ffffff;
   font-weight: bold;

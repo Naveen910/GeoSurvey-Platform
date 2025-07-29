@@ -9,11 +9,6 @@
   gap: 16px;
 }
 
-.tabs {
-  display: flex;
-  border-bottom: 1px solid #e5e7eb;
-}
-
 .tabs img {
   width: 18px;   
   height: 18px;

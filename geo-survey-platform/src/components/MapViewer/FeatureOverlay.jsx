@@ -1,55 +1,75 @@
 import { useEffect, useState } from 'react';
-import { GeoJSON } from 'react-leaflet';
 import axios from 'axios';
+import { WMSTileLayer, GeoJSON } from 'react-leaflet';
 
-const FeatureOverlay = ({ workspace, layerName, onFeatureClick }) => {
+const FeatureOverlay = ({ onFeatureClick }) => {
   const [features, setFeatures] = useState([]);
+  const [config, setConfig] = useState(null);
 
+  // Fetch config
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/geoserver-config');
+        setConfig(res.data);
+      } catch (err) {
+        console.error('Failed to fetch config:', err);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  // Fetch WFS features
   useEffect(() => {
     const fetchFeatures = async () => {
+      if (!config?.wfs?.featureTypes?.length) return;
+
+      const { workspace, typeName } = config.wfs.featureTypes[0];
+      const wfsUrl = `${config.geoserverUrl}${config.wfs.endpoint}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${typeName}&outputFormat=application/json`;
+
       try {
-        // Step 1: Get config from backend
-        const configRes = await axios.get('http://localhost:5000/api/geoserver-config');
-        const config = configRes.data;
-
-        // Step 2: Find the matching WFS layer
-        const layer = config.wfs.featureTypes.find(
-          (l) => l.workspace === workspace && l.typeName === layerName
-        );
-
-        if (!layer) {
-          console.warn(`Layer ${workspace}:${layerName} not found in config.`);
-          return;
-        }
-
-        // Step 3: Build WFS URL
-        const wfsBaseUrl = `${config.geoserverUrl}${config.wfs.endpoint}`;
-        const wfsUrl = `${wfsBaseUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${layerName}&outputFormat=application/json`;
-
-        // Step 4: Fetch features
         const res = await axios.get(wfsUrl);
-        setFeatures(res.data.features);
+        setFeatures(res.data.features || []);
       } catch (err) {
-        console.error('Failed to fetch WFS features', err);
+        console.error('Failed to fetch WFS features:', err);
       }
     };
 
     fetchFeatures();
-  }, [workspace, layerName]);
+  }, [config]);
 
-  // Attach click handler to each feature
+  // Event handler
   const handleEachFeature = (feature, layer) => {
     layer.on({
-      click: () => {
-        onFeatureClick?.(feature.id);
-      },
+      click: () => onFeatureClick?.(feature.id),
     });
-    layer.bindTooltip(feature.id);
+    layer.bindTooltip(feature.id || 'Feature');
   };
 
-  return features.length ? (
-    <GeoJSON data={features} onEachFeature={handleEachFeature} />
-  ) : null;
+  // Early return
+  if (!config) return null;
+
+  const wmsLayer = config.wms?.layers?.[0];
+  const wmsUrl = `${config.geoserverUrl}${config.wms.endpoint}`;
+
+  return (
+    <>
+      {/* WMS */}
+      <WMSTileLayer
+        url={wmsUrl}
+        layers={wmsLayer.name}
+        format="image/png"
+        transparent={true}
+        version="1.1.0"
+        attribution="&copy; GeoServer"
+      />
+
+      {/* WFS */}
+      {features.length > 0 && (
+        <GeoJSON data={features} onEachFeature={handleEachFeature} />
+      )}
+    </>
+  );
 };
 
 export default FeatureOverlay;

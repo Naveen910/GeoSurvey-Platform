@@ -11,7 +11,6 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../../styles/MapViewer/mapmain.css';
-import GeoServerLayer from '../../components/MapViewer/GeoServerLayer';
 import FeatureOverlay from '../../components/MapViewer/FeatureOverlay';
 import FmsPanel from '../../components/MapViewer/FmsPanel';
 import StreetViewPopup from "../../components/MapViewer/StreetViewPopup";
@@ -191,113 +190,69 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
     }
   }, [searchQuery]);
 
-  const [geoConfig, setGeoConfig] = useState(null);
-  const [visibleLayers, setVisibleLayers] = useState({});
-
-  useEffect(() => {
-    fetch('http://65.1.101.129:5000/api/geoserver-config')
-      .then(res => res.json())
-      .then(data => {
-        setGeoConfig(data);
-        const initialVisibility = {};
-        data.layers.forEach(l => {
-          initialVisibility[`${l.workspace}:${l.layer}`] = true;
-        });
-        setVisibleLayers(initialVisibility);
-      })
-      .catch(err => console.error('Failed to fetch GeoServer config', err));
-  }, []);
 
   return (
     <div className="map-main flex">
       <div className="flex-grow relative">
+        <MapContainer
+          center={[latLngZoom.lat, latLngZoom.lng]}
+          zoom={latLngZoom.zoom}
+          scrollWheelZoom
+          zoomControl={false}
+          className="leaflet-container"
+        >
+          <TileLayer url={tileLayers[selectedBasemap]} />
+          <MapUpdater lat={latLngZoom.lat} lng={latLngZoom.lng} zoom={latLngZoom.zoom} />
 
-      <MapContainer
-        center={[latLngZoom.lat, latLngZoom.lng]}
-        zoom={latLngZoom.zoom}
-      
-        scrollWheelZoom
-        zoomControl={false}
-        className="leaflet-container"
-      >
-        <TileLayer url={tileLayers[selectedBasemap]} />
-        <MapUpdater lat={latLngZoom.lat} lng={latLngZoom.lng} zoom={latLngZoom.zoom} />
-        
+          <FeatureOverlay onFeatureClick={(fid) => setSelectedFeatureID(fid)} />
 
-        {geoConfig?.layers.map((layer, idx) => (
-          <GeoServerLayer
-            key={idx}
-            geoserverUrl={geoConfig.geoserverUrl}
-            workspace={layer.workspace}
-            layerName={layer.layer}
-            visible={visibleLayers[`${layer.workspace}:${layer.layer}`]}
+          {clickedLocation && (
+            <ClickPopup
+              clickedLocation={clickedLocation}
+              setStreetViewCoords={setStreetViewCoords}
+              setClickedLocation={setClickedLocation}
+              geoIcon={geoIconInstance}
+            />
+          )}
+
+          {userLocation && (
+            <>
+              <Marker position={[userLocation.lat, userLocation.lng]} icon={geoIconInstance}>
+                <Popup>You are here</Popup>
+              </Marker>
+              <Circle
+                center={[userLocation.lat, userLocation.lng]}
+                radius={30}
+                pathOptions={{
+                  fillColor: '#2196f3',
+                  color: '#2196f3',
+                  fillOpacity: 0.2,
+                }}
+              />
+            </>
+          )}
+
+          {streetViewCoords && (
+            <StreetViewPopup
+              lat={streetViewCoords.lat}
+              lng={streetViewCoords.lng}
+              onClose={() => setStreetViewCoords(null)}
+            />
+          )}
+
+          <ScaleControl position="bottomleft" />
+          <MapControls
+            setLatLngZoom={setLatLngZoom}
+            setUserLocation={setUserLocation}
+            setClickedLocation={setClickedLocation}
           />
-        ))}
+        </MapContainer>
 
-        {geoConfig?.layers.map((layer, idx) => (
-            <FeatureOverlay
-              key={`wfs-${idx}`}
-              workspace={layer.workspace}
-              layerName={layer.layer}
-              onFeatureClick={(fid) => setSelectedFeatureID(fid)}
-            />
-          ))}
-
-
-
-            {clickedLocation && (
-                <ClickPopup 
-                  clickedLocation={clickedLocation} 
-                  setStreetViewCoords={setStreetViewCoords} 
-                  setClickedLocation={setClickedLocation}
-                  geoIcon={geoIconInstance}
-                />
-            )}
-
-
-        {userLocation && (
-          <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={geoIconInstance}>
-              <Popup>You are here</Popup>
-            </Marker>
-            <Circle
-              center={[userLocation.lat, userLocation.lng]}
-              radius={30}
-              pathOptions={{
-                fillColor: '#2196f3',
-                color: '#2196f3',
-                fillOpacity: 0.2,
-              }}
-            />
-          </>
-        )}
-
-        {streetViewCoords && (
-  <StreetViewPopup
-    lat={streetViewCoords.lat}
-    lng={streetViewCoords.lng}
-    onClose={() => setStreetViewCoords(null)}
-  />
-)}
-
-
-        <ScaleControl position="bottomleft" />
-        <MapControls
-          setLatLngZoom={setLatLngZoom}
-          setUserLocation={setUserLocation}
-          setClickedLocation={setClickedLocation}
-        />
-
-        
-
-      </MapContainer>
-
-      <div className="map-info-box">
-        <div>Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°</div>
-        <div>Zoom: {latLngZoom.zoom}</div>
+        <div className="map-info-box">
+          <div>Lat: {latLngZoom.lat}°, Lng: {latLngZoom.lng}°</div>
+          <div>Zoom: {latLngZoom.zoom}</div>
+        </div>
       </div>
-    </div>
-
 
       {selectedFeatureID && (
         <FmsPanel
@@ -305,7 +260,6 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
           onClose={() => setSelectedFeatureID(null)}
         />
       )}
-
     </div>
   );
 };

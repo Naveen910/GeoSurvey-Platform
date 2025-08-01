@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-const API_BASE = 'http://65.1.101.129:3000/api/fms';
+const API_BASE = 'http://localhost:5000/api/fms';
 
 const FmsPanel = ({ featureID, onClose }) => {
   const [formData, setFormData] = useState({

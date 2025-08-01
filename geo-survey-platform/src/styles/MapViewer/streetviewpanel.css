@@ -13,19 +13,15 @@
   top: 60px;
   right: 10px;
   z-index: 30;
-  background-color: rgb(255, 255, 255);
+  color: white;
+  background-color: rgb(68, 68, 68);
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 0px;
   font-size: 18px;
-  font-weight: bold;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   border: none;
   transition: background-color 0.2s ease;
-}
-
-.streetview-close-button:hover {
-  background-color: rgb(68, 68, 68);
 }
 
 .streetview-iframe {

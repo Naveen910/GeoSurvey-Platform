@@ -13,7 +13,6 @@ import 'leaflet/dist/leaflet.css';
 import '../../styles/MapViewer/mapmain.css';
 import FeatureOverlay from '../../components/MapViewer/FeatureOverlay';
 import FmsPanel from '../../components/MapViewer/FmsPanel';
-import StreetViewPopup from "../../components/MapViewer/StreetViewPopup";
 
 
 import zoomInIcon from '../../assets/MapViewer/zoomin.png';
@@ -118,9 +117,7 @@ const MapControls = ({ setLatLngZoom, setUserLocation, setClickedLocation }) => 
 
 
 
-const ClickPopup = ({ clickedLocation, setStreetViewCoords, setClickedLocation, geoIcon  }) => {
-  
-
+const ClickPopup = ({ clickedLocation, onStreetView, setClickedLocation, geoIcon  }) => {
   if (!clickedLocation) return null;
   const { lat, lng } = clickedLocation;
 
@@ -135,7 +132,7 @@ const ClickPopup = ({ clickedLocation, setStreetViewCoords, setClickedLocation, 
       <div className="popup-wrapper">
         <p>Coordinates: {lat.toFixed(6)}, {lng.toFixed(6)}</p>
         <button
-          onClick={() => setStreetViewCoords({ lat, lng })}
+          onClick={() => onStreetView({ lat, lng })}
           className="popup-button"
         >
           View Street
@@ -149,7 +146,7 @@ const ClickPopup = ({ clickedLocation, setStreetViewCoords, setClickedLocation, 
 
 
 
-const MapMain = ({ selectedBasemap, searchQuery }) => {
+const MapMain = ({ selectedBasemap, searchQuery, setStreetViewLocation   }) => {
   const [latLngZoom, setLatLngZoom] = useState({
     lat: 17.4021,
     lng: 78.4867,
@@ -159,7 +156,6 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [clickedLocation, setClickedLocation] = useState(null);
   const [selectedFeatureID, setSelectedFeatureID] = useState(null);
-  const [streetViewCoords, setStreetViewCoords] = useState(null);
 
 
   const geoIconInstance = useMemo(createGeoIcon, []);
@@ -209,8 +205,8 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
           {clickedLocation && (
             <ClickPopup
               clickedLocation={clickedLocation}
-              setStreetViewCoords={setStreetViewCoords}
               setClickedLocation={setClickedLocation}
+              onStreetView={setStreetViewLocation}
               geoIcon={geoIconInstance}
             />
           )}
@@ -232,13 +228,7 @@ const MapMain = ({ selectedBasemap, searchQuery }) => {
             </>
           )}
 
-          {streetViewCoords && (
-            <StreetViewPopup
-              lat={streetViewCoords.lat}
-              lng={streetViewCoords.lng}
-              onClose={() => setStreetViewCoords(null)}
-            />
-          )}
+          
 
           <ScaleControl position="bottomleft" />
           <MapControls

@@ -10,7 +10,7 @@ const FeatureOverlay = ({ onFeatureClick }) => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/geoserver-config');
+        const res = await axios.get('http://65.1.101.129:5000/api/geoserver-config');
         setConfig(res.data);
       } catch (err) {
         console.error('Failed to fetch config:', err);

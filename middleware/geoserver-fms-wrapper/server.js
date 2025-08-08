@@ -35,9 +35,9 @@ const geoConfig = {
     endpoint: '/wms',
     layers: [
       {
-        name: 'topp:states',
-        workspace: 'topp',
-        layer: 'states',
+        name: 'hyderabad:hyderabad_map',
+        workspace: 'hyderabad',
+        layer: 'hyderabad_map',
       },
     ],
   },
@@ -45,9 +45,9 @@ const geoConfig = {
     endpoint: '/wfs',
     featureTypes: [
       {
-        name: 'topp:states',
-        workspace: 'topp',
-        typeName: 'states',
+        name: 'hyderabad:hyderabad_map',
+        workspace: 'hyderabad',
+        typeName: 'hyderabad_map',
       },
     ],
   }

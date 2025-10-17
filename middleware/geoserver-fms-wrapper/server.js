@@ -30,7 +30,7 @@ app.use('/api/systemoverview', systemoverviewRoutes);
 
 // GeoServer Config API
 const geoConfig = {
-  geoserverUrl: 'http://65.1.101.129:8080/geoserver',
+  geoserverUrl: '/geoserver',
   wms: {
     endpoint: '/wms',
     layers: [

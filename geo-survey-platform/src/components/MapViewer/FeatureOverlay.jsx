@@ -25,7 +25,7 @@ const FeatureOverlay = ({ onFeatureClick }) => {
       if (!config?.wfs?.featureTypes?.length) return;
 
       const { workspace, typeName } = config.wfs.featureTypes[0];
-      const wfsUrl = `${config.geoserverUrl}${config.wfs.endpoint}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${typeName}&outputFormat=application/json`;
+      const wfsUrl = `${config.wfs.endpoint}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${typeName}&outputFormat=application/json`;
 
       try {
         const res = await axios.get(wfsUrl);
@@ -50,7 +50,7 @@ const FeatureOverlay = ({ onFeatureClick }) => {
   if (!config) return null;
 
   const wmsLayer = config.wms?.layers?.[0];
-  const wmsUrl = `${config.geoserverUrl}${config.wms.endpoint}`;
+  const wmsUrl = `${config.wms.endpoint}`;
 
   return (
     <>

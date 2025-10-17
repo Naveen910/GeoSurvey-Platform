@@ -1,2 +1,3 @@
 # GeoSurvey-Platform
-Professional GIS &amp; Survey Management
+
+Professional GIS & Survey Management

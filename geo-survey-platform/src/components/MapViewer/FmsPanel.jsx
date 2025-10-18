@@ -4,35 +4,66 @@ import '../../styles/MapViewer/FmsPanel.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const API_BASE = '/api/fms';
 
 const FmsPanel = ({ featureID, onClose }) => {
   const [formData, setFormData] = useState({
     status: '',
-    inspector: '',
-    date: '', 
-    remarks: ''
+    agent: '',
+    newLatitude: '',
+    newLongitude: '',
+    newAltitude: '',
+    images: [],
   });
 
   useEffect(() => {
     if (!featureID) return;
 
-    axios.get(`${API_BASE}/${featureID}`)
-      .then(res => setFormData(res.data.formData || {}))
+    axios
+      .get(`${API_BASE}/${featureID}`)
+      .then((res) => setFormData(res.data.formData || {}))
       .catch(() => setFormData({}));
   }, [featureID]);
 
   const handleChange = (key, value) => {
     const updated = { ...formData, [key]: value };
     setFormData(updated);
-    axios.put(`${API_BASE}/${featureID}`, { formData: updated })
+
+    axios
+      .put(`${API_BASE}/${featureID}`, { formData: updated })
       .catch(() => {
         axios.post(`${API_BASE}`, { featureID, formData: updated });
       });
   };
 
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length + (formData.images?.length || 0) > 5) {
+      toast.error('You can upload a maximum of 5 images.');
+      return;
+    }
 
+    const newImages = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          })
+      )
+    );
+
+    const updatedImages = [...(formData.images || []), ...newImages];
+    handleChange('images', updatedImages);
+  };
+
+  const handleDeleteImage = (index) => {
+    const updatedImages = formData.images.filter((_, i) => i !== index);
+    handleChange('images', updatedImages);
+    toast.info('Image deleted');
+  };
 
   const handleSave = async () => {
     try {
@@ -48,12 +79,11 @@ const FmsPanel = ({ featureID, onClose }) => {
     }
   };
 
-
   const handleDelete = async () => {
     try {
       await axios.delete(`${API_BASE}/${featureID}`);
       toast.success('Deleted successfully!');
-      onClose(); // Close panel on delete
+      onClose();
     } catch (err) {
       toast.error('Error deleting entry');
     }
@@ -74,43 +104,70 @@ const FmsPanel = ({ featureID, onClose }) => {
           value={formData.status || ''}
           onChange={(e) => handleChange('status', e.target.value)}
         >
-          <option value="">Select</option>
           <option value="Pending">Pending</option>
-          <option value="Inspected">Inspected</option>
           <option value="Completed">Completed</option>
         </select>
       </div>
 
       <div className="form-group">
-        <label>Inspector</label>
+        <label>Agent Name</label>
         <input
           type="text"
-          value={formData.inspector || ''}
-          onChange={(e) => handleChange('inspector', e.target.value)}
+          value={formData.agent || ''}
+          onChange={(e) => handleChange('agent', e.target.value)}
         />
       </div>
 
       <div className="form-group">
-        <label>Date</label>
+        <label>New Latitude</label>
         <input
-          type="date"
-          value={formData.inspectionDate || new Date().toISOString().split('T')[0]}
-          onChange={(e) => handleChange('inspectionDate', e.target.value)}
+          type="number"
+          value={formData.newLatitude || ''}
+          onChange={(e) => handleChange('newLatitude', e.target.value)}
         />
       </div>
 
       <div className="form-group">
-        <label>Remarks</label>
-        <textarea
-          rows="3"
-          value={formData.remarks || ''}
-          onChange={(e) => handleChange('remarks', e.target.value)}
+        <label>New Longitude</label>
+        <input
+          type="number"
+          value={formData.newLongitude || ''}
+          onChange={(e) => handleChange('newLongitude', e.target.value)}
         />
+      </div>
+
+      <div className="form-group">
+        <label>New Altitude</label>
+        <input
+          type="number"
+          value={formData.newAltitude || ''}
+          onChange={(e) => handleChange('newAltitude', e.target.value)}
+        />
+      </div>
+
+      {/* Image Upload Section */}
+      <div className="form-group">
+        <label>Upload Images (max 5)</label>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+        />
+
+        {/* Show previews with delete buttons */}
+        <div className="image-preview-container">
+          {formData.images?.map((img, idx) => (
+            <div key={idx} className="image-preview">
+              <img src={img} alt={`upload-${idx}`} />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="fms-panel-actions">
-          <button className="save-button" onClick={handleSave}>💾 Save</button>
-          <button className="delete-button" onClick={handleDelete}>🗑️ Delete</button>
+        <button className="save-button" onClick={handleSave}>💾 Save</button>
+        <button className="delete-button" onClick={handleDelete}>🗑️ Delete</button>
       </div>
     </div>
   );

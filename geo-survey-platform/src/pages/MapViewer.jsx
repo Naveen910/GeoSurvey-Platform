@@ -23,8 +23,8 @@ const MapViewer = () => {
     <div className="map-viewer-page">
       <MapHeader onSearch={handleSearchQuery} />
 
-      <div className="map-viewer-body">
-        <LeftPanel selectedBasemap={basemap} setBasemap={setBasemap} />
+      {/* <div className="map-viewer-body"> */}
+        {/* <LeftPanel selectedBasemap={basemap} setBasemap={setBasemap} /> */}
 
         <div className="map-viewer-body">
           <MapMain
@@ -41,7 +41,7 @@ const MapViewer = () => {
           )}
         </div>
       </div>
-    </div>
+    //</div>
   );
 };
 

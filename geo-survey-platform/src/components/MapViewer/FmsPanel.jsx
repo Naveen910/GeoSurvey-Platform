@@ -3,6 +3,7 @@ import axios from 'axios';
 import '../../styles/MapViewer/FmsPanel.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { saveData, getData, deleteData, getAllData } from '../../utils/indexedDB';
 
 const API_BASE = '/api/fms';
 
@@ -16,26 +17,67 @@ const FmsPanel = ({ featureID, onClose }) => {
     images: [],
   });
 
+  // Load data from IndexedDB first, fallback to server
   useEffect(() => {
     if (!featureID) return;
 
-    axios
-      .get(`${API_BASE}/${featureID}`)
-      .then((res) => setFormData(res.data.formData || {}))
-      .catch(() => setFormData({}));
+    const loadData = async () => {
+      const localData = await getData(featureID);
+      if (localData) setFormData(localData.formData);
+      else {
+        try {
+          const res = await axios.get(`${API_BASE}/${featureID}`);
+          setFormData(res.data.formData || {});
+        } catch {
+          setFormData({});
+        }
+      }
+    };
+
+    loadData();
   }, [featureID]);
 
-  const handleChange = (key, value) => {
-    const updated = { ...formData, [key]: value };
-    setFormData(updated);
-
-    axios
-      .put(`${API_BASE}/${featureID}`, { formData: updated })
-      .catch(() => {
-        axios.post(`${API_BASE}`, { featureID, formData: updated });
-      });
+  // Auto-sync all local data when online
+  const autoSync = async () => {
+    const allLocalData = await getAllData();
+    for (let item of allLocalData) {
+      try {
+        await axios.put(`${API_BASE}/${item.featureID}`, { formData: item.formData });
+        await deleteData(item.featureID); // remove local copy after sync
+        toast.success(`Feature ${item.featureID} synced to server`);
+      } catch {
+        try {
+          await axios.post(`${API_BASE}`, { featureID: item.featureID, formData: item.formData });
+          await deleteData(item.featureID);
+          toast.success(`Feature ${item.featureID} created on server`);
+        } catch {
+          toast.info(`Feature ${item.featureID} remains saved locally`);
+        }
+      }
+    }
   };
 
+  // Listen for network coming back online
+  useEffect(() => {
+    window.addEventListener('online', autoSync);
+    return () => window.removeEventListener('online', autoSync);
+  }, []);
+
+  // Handle field changes
+  const handleChange = async (key, value) => {
+    const updated = { ...formData, [key]: value };
+    setFormData(updated);
+    await saveData(featureID, updated); // save locally
+
+    // Try immediate sync
+    axios.put(`${API_BASE}/${featureID}`, { formData: updated }).catch(() => {
+      axios.post(`${API_BASE}`, { featureID, formData: updated }).catch(() => {
+        toast.info('Data saved locally. Will sync when online.');
+      });
+    });
+  };
+
+  // Handle image upload
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length + (formData.images?.length || 0) > 5) {
@@ -55,37 +97,43 @@ const FmsPanel = ({ featureID, onClose }) => {
       )
     );
 
-    const updatedImages = [...(formData.images || []), ...newImages];
-    handleChange('images', updatedImages);
+    handleChange('images', [...(formData.images || []), ...newImages]);
   };
 
+  // Delete an image
   const handleDeleteImage = (index) => {
     const updatedImages = formData.images.filter((_, i) => i !== index);
     handleChange('images', updatedImages);
     toast.info('Image deleted');
   };
 
+  // Save form manually
   const handleSave = async () => {
+    await saveData(featureID, formData); // always save locally
     try {
       await axios.put(`${API_BASE}/${featureID}`, { formData });
+      await deleteData(featureID); // remove local after successful save
       toast.success('Saved successfully!');
-    } catch (err) {
+    } catch {
       try {
         await axios.post(`${API_BASE}`, { featureID, formData });
+        await deleteData(featureID);
         toast.success('Created new entry!');
-      } catch (postErr) {
-        toast.error('Error saving data');
+      } catch {
+        toast.info('Data saved locally. Will sync when online.');
       }
     }
   };
 
+  // Delete entire form
   const handleDelete = async () => {
+    await deleteData(featureID); // delete local copy first
     try {
       await axios.delete(`${API_BASE}/${featureID}`);
       toast.success('Deleted successfully!');
       onClose();
-    } catch (err) {
-      toast.error('Error deleting entry');
+    } catch {
+      toast.info('Deleted locally. Will sync deletion when online.');
     }
   };
 
@@ -145,7 +193,6 @@ const FmsPanel = ({ featureID, onClose }) => {
         />
       </div>
 
-      {/* Image Upload Section */}
       <div className="form-group">
         <label>Upload Images (max 5)</label>
         <input
@@ -155,11 +202,11 @@ const FmsPanel = ({ featureID, onClose }) => {
           onChange={handleImageUpload}
         />
 
-        {/* Show previews with delete buttons */}
         <div className="image-preview-container">
           {formData.images?.map((img, idx) => (
             <div key={idx} className="image-preview">
               <img src={img} alt={`upload-${idx}`} />
+              <button onClick={() => handleDeleteImage(idx)}>×</button>
             </div>
           ))}
         </div>

@@ -14,7 +14,7 @@ const SystemOverview = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get('/api/systemoverview/overview');
+        const res = await axios.get('/api/systemoverview');
         const data = res.data;
 
         setStats([

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { WMSTileLayer, GeoJSON } from 'react-leaflet';
 
-const FeatureOverlay = ({ onFeatureClick }) => {
+const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
   const [features, setFeatures] = useState([]);
   const [config, setConfig] = useState(null);
 
-  // Fetch config
+  // Fetch config once
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -19,33 +19,38 @@ const FeatureOverlay = ({ onFeatureClick }) => {
     fetchConfig();
   }, []);
 
-  // Fetch WFS features
+  // Fetch WFS features once after config loads
   useEffect(() => {
-    const fetchFeatures = async () => {
-      if (!config?.wfs?.featureTypes?.length) return;
+    if (!config?.wfs?.featureTypes?.length) return;
 
+    let cancelled = false;
+
+    const fetchFeatures = async () => {
       const { workspace, typeName } = config.wfs.featureTypes[0];
       const wfsUrl = `${config.geoserverUrl}${config.wfs.endpoint}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${typeName}&outputFormat=application/json`;
+
       try {
         const res = await axios.get(wfsUrl);
-        setFeatures(res.data.features || []);
+        if (!cancelled) {
+          const feats = res.data.features || [];
+          setFeatures(feats);
+          onFeaturesLoaded?.(feats); // send features to MapMain
+        }
       } catch (err) {
-        console.error('Failed to fetch WFS features:', err);
+        if (!cancelled) console.error('Failed to fetch WFS features:', err);
       }
     };
 
     fetchFeatures();
-  }, [config]);
 
-  // Event handler
+    return () => { cancelled = true; }; // cleanup on unmount
+  }, [config, onFeaturesLoaded]);
+
   const handleEachFeature = (feature, layer) => {
-    layer.on({
-      click: () => onFeatureClick?.(feature.id),
-    });
+    layer.on({ click: () => onFeatureClick?.(feature.id) });
     layer.bindTooltip(feature.id || 'Feature');
   };
 
-  // Early return
   if (!config) return null;
 
   const wmsLayer = config.wms?.layers?.[0];
@@ -53,7 +58,6 @@ const FeatureOverlay = ({ onFeatureClick }) => {
 
   return (
     <>
-      {/* WMS */}
       <WMSTileLayer
         url={wmsUrl}
         layers={wmsLayer.name}
@@ -63,7 +67,6 @@ const FeatureOverlay = ({ onFeatureClick }) => {
         attribution="&copy; GeoServer"
       />
 
-      {/* WFS */}
       {features.length > 0 && (
         <GeoJSON data={features} onEachFeature={handleEachFeature} />
       )}

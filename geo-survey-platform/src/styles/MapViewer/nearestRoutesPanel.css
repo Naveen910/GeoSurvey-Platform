@@ -1,0 +1,47 @@
+.nearest-routes-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  padding: 12px;
+  z-index: 1000;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.route-item {
+  border-bottom: 1px solid #ddd;
+  padding: 6px 0;
+}
+
+.open-maps-btn {
+  background-color: #2196f3;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 4px;
+}

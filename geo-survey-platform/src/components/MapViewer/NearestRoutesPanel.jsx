@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '../../styles/MapViewer/nearestRoutesPanel.css'; // create your styles similar to FmsPanel
-
-const GOOGLE_API_KEY = 'AIzaSyAMi9xPbEIkqFd3wjgm-qU1CnHu16z2UEs'; // ⚠️ use restricted key
+import '../../styles/MapViewer/nearestRoutesPanel.css'; // similar to FmsPanel styling
 
 // Haversine formula to calculate straight-line distance (km)
 function getDistanceKm(lat1, lon1, lat2, lon2) {
@@ -19,13 +17,15 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
 
 const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
   const [nearestRoutes, setNearestRoutes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!userLocation || !wfsFeatures || wfsFeatures.length === 0) return;
 
     const fetchNearest = async () => {
+      setLoading(true);
       try {
-        // 1️⃣ Filter features within 30 km
+        // 1️⃣ Filter features within 30 km radius
         const nearby = wfsFeatures
           .map(f => {
             const [lon, lat] = f.geometry.coordinates;
@@ -36,36 +36,42 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
               approxDist: getDistanceKm(userLocation.lat, userLocation.lng, lat, lon),
             };
           })
-          .filter(f => f.approxDist <= 1000)
-          .slice(0, 25);
+          .filter(f => f.approxDist <= 1000) 
+          .slice(0, 5); 
 
         if (nearby.length === 0) {
           setNearestRoutes([]);
+          setLoading(false);
           return;
         }
 
-        // 2️⃣ Build Distance Matrix request
-        const origins = `${userLocation.lat},${userLocation.lng}`;
-        const destinations = nearby.map(f => `${f.lat},${f.lon}`).join('|');
-        const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origins}&destinations=${destinations}&key=${GOOGLE_API_KEY}`;
+        const response = await fetch('/api/distance-matrix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            origins: [`${userLocation.lat},${userLocation.lng}`],
+            destinations: nearby.map(f => `${f.lat},${f.lon}`),
+          }),
+        });
 
-        const response = await fetch(url);
         const data = await response.json();
+        if (!data.rows) throw new Error('Invalid Distance Matrix response');
 
-        if (data.status !== 'OK') throw new Error(data.error_message || data.status);
-
-        // 3️⃣ Map distances back to features
+        // 3️⃣ Combine distances and durations back into features
         const enriched = nearby.map((f, i) => ({
           ...f,
           distanceKm: data.rows[0].elements[i]?.distance?.value / 1000 || null,
           durationText: data.rows[0].elements[i]?.duration?.text || 'N/A',
         }));
 
-        // 4️⃣ Sort by distance
+        // 4️⃣ Sort by shortest travel distance
         enriched.sort((a, b) => (a.distanceKm || Infinity) - (b.distanceKm || Infinity));
+
         setNearestRoutes(enriched);
       } catch (err) {
         console.error('Distance Matrix error:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -75,8 +81,11 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
   return (
     <div className="nearest-routes-panel">
       <h3>Nearest Routes</h3>
-      {nearestRoutes.length === 0 ? (
-        <p>No nearby routes.</p>
+
+      {loading ? (
+        <p>Loading nearby routes...</p>
+      ) : nearestRoutes.length === 0 ? (
+        <p>No nearby routes found.</p>
       ) : (
         <ul>
           {nearestRoutes.map((r, idx) => (

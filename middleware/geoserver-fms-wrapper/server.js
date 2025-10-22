@@ -4,6 +4,8 @@ const http = require('http');
 const cors = require('cors');
 const fmsRoutes = require('./routes/fms');
 const systemoverviewRoutes = require('./routes/systemoverview');
+const distanceMatrixRoutes = require('./routes/distanceMatrix');
+
 const setupWebSocket = require('./socket');
 
 const app = express();
@@ -29,6 +31,8 @@ mongoose.connect('mongodb://65.1.101.129:27017/geoserver_fms', {
 // REST API Routes
 app.use('/api/fms', fmsRoutes);
 app.use('/api/systemoverview', systemoverviewRoutes);
+app.use('/api/distance-matrix', distanceMatrixRoutes);
+
 
 // GeoServer Config API
 const geoConfig = {

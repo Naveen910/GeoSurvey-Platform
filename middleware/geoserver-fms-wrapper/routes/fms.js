@@ -8,7 +8,7 @@ router.get('/status', async (req, res) => {
   try {
     const features = await FormSchema.find({}, {featureID: 1, formData: 1 }).lean();
     const data = features.map(f => ({
-      id: f.featureID,           // match with GeoJSON feature.id
+      id: f.featureID,          
       status: f.formData?.status || 'Pending',
     }));
     res.json(data);

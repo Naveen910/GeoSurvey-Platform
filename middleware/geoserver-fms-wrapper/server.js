@@ -41,9 +41,9 @@ const geoConfig = {
     endpoint: '/wms',
     layers: [
       {
-        name: 'gujarat:GCP_locations',
+        name: 'gujarat:GCP',
         workspace: 'gujarat',
-        layer: 'GCP_locations',
+        layer: 'GCP',
       },
     ],
   },
@@ -51,9 +51,9 @@ const geoConfig = {
     endpoint: '/wfs',
     featureTypes: [
       {
-        name: 'gujarat:GCP_locations',
+        name: 'gujarat:GCP',
         workspace: 'gujarat',
-        typeName: 'GCP_locations',
+        typeName: 'GCP',
       },
     ],
   }

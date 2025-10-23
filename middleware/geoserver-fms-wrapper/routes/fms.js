@@ -2,6 +2,22 @@ const express = require('express');
 const router = express.Router();
 const FormSchema = require('../models/FormSchema');
 
+
+// GET /api/fms/status
+router.get('/status', async (req, res) => {
+  try {
+    const features = await FmsModel.find({}, { _id: 1, featureID: 1, formData: 1 }).lean();
+    const data = features.map(f => ({
+      id: f.featureID,           // match with GeoJSON feature.id
+      status: f.formData?.status || 'Pending',
+    }));
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch feature status' });
+  }
+});
+
 // CREATE
 router.post('/', async (req, res) => {
   const { featureID, formData } = req.body;

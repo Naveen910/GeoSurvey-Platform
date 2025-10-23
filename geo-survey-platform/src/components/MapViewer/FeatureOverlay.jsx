@@ -10,7 +10,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await axios.get('/api/geoserver-config');
+        const res = await axios.get('https://65.1.101.129/api/geoserver-config');
         setConfig(res.data);
       } catch (err) {
         console.error('Failed to fetch config:', err);
@@ -27,7 +27,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
 
     const fetchFeatures = async () => {
       const { workspace, typeName } = config.wfs.featureTypes[0];
-      const wfsUrl = `${config.geoserverUrl}${config.wfs.endpoint}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${typeName}&outputFormat=application/json`;
+      const wfsUrl = `https://65.1.101.129/${config.geoserverUrl}${config.wfs.endpoint}?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${typeName}&outputFormat=application/json`;
 
       try {
         const res = await axios.get(wfsUrl);

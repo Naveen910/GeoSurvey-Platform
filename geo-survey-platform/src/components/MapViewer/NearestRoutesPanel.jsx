@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import '../../styles/MapViewer/nearestRoutesPanel.css'; // similar to FmsPanel styling
+import '../../styles/MapViewer/nearestRoutesPanel.css';
 
-// Haversine formula to calculate straight-line distance (km)
 function getDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -9,8 +8,8 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -25,19 +24,20 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
     const fetchNearest = async () => {
       setLoading(true);
       try {
-        // 1️⃣ Filter features within 30 km radius
+        // 1️⃣ Filter features within 1000 km (for testing; adjust later)
         const nearby = wfsFeatures
           .map(f => {
             const [lon, lat] = f.geometry.coordinates;
             return {
-              ...f,
+              id: f.id,
               lat,
               lon,
+              properties: f.properties,
               approxDist: getDistanceKm(userLocation.lat, userLocation.lng, lat, lon),
             };
           })
-          .filter(f => f.approxDist <= 1000) 
-          .slice(0, 5); 
+          .filter(f => f.approxDist <= 1000)
+          .slice(0, 5); // limit to 5 for Google API
 
         if (nearby.length === 0) {
           setNearestRoutes([]);
@@ -45,26 +45,33 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
           return;
         }
 
-        const response = await fetch('/api/distance-matrix', {
+        // 2️⃣ Call backend Distance Matrix proxy
+        const response = await fetch('https://65.1.101.129/api/distance-matrix', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             origins: [`${userLocation.lat},${userLocation.lng}`],
-            destinations: nearby.map(f => `${f.lat},${f.lon}`),
-          }),
+            destinations: nearby.map(f => `${f.lat},${f.lon}`)
+          })
         });
 
         const data = await response.json();
         if (!data.rows) throw new Error('Invalid Distance Matrix response');
 
-        // 3️⃣ Combine distances and durations back into features
-        const enriched = nearby.map((f, i) => ({
-          ...f,
-          distanceKm: data.rows[0].elements[i]?.distance?.value / 1000 || null,
-          durationText: data.rows[0].elements[i]?.duration?.text || 'N/A',
-        }));
+        // 3️⃣ Map distances safely
+        const enriched = nearby.map((f, i) => {
+          const element = data.rows?.[0]?.elements?.[i];
+          if (!element || element.status !== 'OK') {
+            return { ...f, distanceKm: null, durationText: 'N/A' };
+          }
+          return {
+            ...f,
+            distanceKm: element.distance.value / 1000,
+            durationText: element.duration.text
+          };
+        });
 
-        // 4️⃣ Sort by shortest travel distance
+        // 4️⃣ Sort by distance
         enriched.sort((a, b) => (a.distanceKm || Infinity) - (b.distanceKm || Infinity));
 
         setNearestRoutes(enriched);
@@ -81,7 +88,6 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
   return (
     <div className="nearest-routes-panel">
       <h3>Nearest Routes</h3>
-
       {loading ? (
         <p>Loading nearby routes...</p>
       ) : nearestRoutes.length === 0 ? (
@@ -89,10 +95,10 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
       ) : (
         <ul>
           {nearestRoutes.map((r, idx) => (
-            <li key={idx} className="route-item">
-              <b>{r.properties?.name || `Route ${idx + 1}`}</b>
+            <li key={r.id || idx} className="route-item">
+              <b>{r.properties?.Name || `Route ${idx + 1}`}</b>
               <br />
-              Distance: {r.distanceKm?.toFixed(2)} km
+              Distance: {r.distanceKm ? r.distanceKm.toFixed(2) + ' km' : 'N/A'}
               <br />
               Duration: {r.durationText}
               <br />

@@ -6,7 +6,7 @@ const FormSchema = require('../models/FormSchema');
 // GET /api/fms/status
 router.get('/status', async (req, res) => {
   try {
-    const features = await FmsModel.find({}, { _id: 1, featureID: 1, formData: 1 }).lean();
+    const features = await FormSchema.find({}, {featureID: 1, formData: 1 }).lean();
     const data = features.map(f => ({
       id: f.featureID,           // match with GeoJSON feature.id
       status: f.formData?.status || 'Pending',

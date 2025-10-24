@@ -44,9 +44,9 @@ const MapHeader = ({ onSearch }) => {
             onKeyDown={handleKeyDown}
           />
         </div>
-        <img src={shareIcon} alt="Share" className="icon-button" />
+        {/* <img src={shareIcon} alt="Share" className="icon-button" /> */}
         <img src={downloadIcon} alt="Download" className="icon-button" />
-        <img src={settingsIcon} alt="Settings" className="icon-button" />
+        {/* <img src={settingsIcon} alt="Settings" className="icon-button" /> */}
       </div>
     </div>
   );

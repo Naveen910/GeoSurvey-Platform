@@ -68,6 +68,7 @@ const FmsPanel = ({ featureID, onClose }) => {
   const handleChange = async (key, value) => {
     const updated = { ...formData, [key]: value };
     setFormData(updated);
+    setIsSaved(false);
     await saveData(featureID, updated); // save locally
 
     // Try immediate sync
@@ -109,22 +110,31 @@ const FmsPanel = ({ featureID, onClose }) => {
   };
 
   // Save form manually
-  const handleSave = async () => {
-    await saveData(featureID, formData); // always save locally
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+const handleSave = async () => {
+  setIsSaving(true);
+  await saveData(featureID, formData); // always save locally
+  try {
+    await axios.put(`${API_BASE}/${featureID}`, { formData });
+    await deleteData(featureID); // remove local after successful save
+    toast.success('Saved successfully!');
+    setIsSaved(true);
+  } catch {
     try {
-      await axios.put(`${API_BASE}/${featureID}`, { formData });
-      await deleteData(featureID); // remove local after successful save
-      toast.success('Saved successfully!');
+      await axios.post(`${API_BASE}`, { featureID, formData });
+      await deleteData(featureID);
+      toast.success('Created new entry!');
+      setIsSaved(true);
     } catch {
-      try {
-        await axios.post(`${API_BASE}`, { featureID, formData });
-        await deleteData(featureID);
-        toast.success('Created new entry!');
-      } catch {
-        toast.info('Data saved locally. Will sync when online.');
-      }
+      toast.info('Data saved locally. Will sync when online.');
     }
-  };
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 
   // Delete entire form
   const handleDelete = async () => {
@@ -234,8 +244,24 @@ const FmsPanel = ({ featureID, onClose }) => {
       </div>
 
       <div className="fms-panel-actions">
-        <button className="save-button" onClick={handleSave}>💾 Save</button>
-        <button className="delete-button" onClick={handleDelete}>🗑️ Delete</button>
+        <button
+          className={`save-button ${isSaved ? 'saved' : ''}`}
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <>
+              <span className="spinner"></span> Saving...
+            </>
+          ) : isSaved ? (
+            <>
+              ✓ Saved
+            </>
+          ) : ('Save')}
+        </button>
+        
+        {/* <button className="delete-button" onClick={handleDelete}>Delete</button> */}
+
       </div>
     </div>
   );

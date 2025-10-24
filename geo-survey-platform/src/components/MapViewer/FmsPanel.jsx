@@ -13,6 +13,9 @@ const FmsPanel = ({ featureID, onClose }) => {
     agent: '',
     newLatitude: '',
     newLongitude: '',
+
+
+
     newAltitude: '',
     images: [],
   });

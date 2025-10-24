@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { WMSTileLayer, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
@@ -24,7 +24,8 @@ const completedIcon = new L.Icon({
 const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
   const [features, setFeatures] = useState([]);
   const [config, setConfig] = useState(null);
-  const [featureStatus, setFeatureStatus] = useState({}); // status map
+  const [featureStatus, setFeatureStatus] = useState({});
+  const geoJsonRef = useRef(null);
 
   // --- Fetch GeoServer Config ---
   useEffect(() => {
@@ -42,7 +43,6 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
   // --- Fetch WFS Features ---
   useEffect(() => {
     if (!config?.wfs?.featureTypes?.length) return;
-
     let cancelled = false;
 
     const fetchFeatures = async () => {
@@ -68,26 +68,53 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
     };
   }, [config, onFeaturesLoaded]);
 
-  // --- Fetch Feature Status ---
+  // --- Fetch Feature Status (live updates every few seconds) ---
   useEffect(() => {
+    let cancelled = false;
+
     const fetchFeatureStatus = async () => {
       try {
         const res = await axios.get('/api/fms/status');
-        const statusMap = {};
+        if (cancelled) return;
 
-        // Map ID → status
+        const statusMap = {};
         res.data.forEach((f) => {
-          // Normalize ID (strip workspace if present)
           const cleanId = f.id.includes(':') ? f.id.split(':')[1] : f.id;
           statusMap[cleanId] = f.status;
         });
 
         setFeatureStatus(statusMap);
       } catch (err) {
+        console.error('❌ Failed to fetch feature status:', err);
       }
     };
+
     fetchFeatureStatus();
+    const interval = setInterval(fetchFeatureStatus, 100); // every 1 s
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
+
+  // --- Update marker icons live when status changes ---
+  useEffect(() => {
+    if (!geoJsonRef.current) return;
+
+    geoJsonRef.current.eachLayer((layer) => {
+      const feature = layer.feature;
+      if (!feature?.id) return;
+
+      const cleanId = feature.id.includes(':')
+        ? feature.id.split(':')[1]
+        : feature.id;
+
+      const status = featureStatus[cleanId];
+      const icon = (status === 'Completed' && completedIcon) || defaultIcon;
+
+      if (layer.setIcon) layer.setIcon(icon);
+    });
+  }, [featureStatus]);
 
   // --- Handle feature click ---
   const handleEachFeature = (feature, layer) => {
@@ -102,7 +129,6 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
 
   return (
     <>
-      {/* Base WMS Layer */}
       <WMSTileLayer
         url={wmsUrl}
         layers={wmsLayer.name}
@@ -112,21 +138,17 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
         attribution="&copy; GeoServer"
       />
 
-      {/* Overlay GeoJSON Features */}
       {features.length > 0 && (
         <GeoJSON
+          ref={geoJsonRef}
           data={features}
           onEachFeature={handleEachFeature}
           pointToLayer={(feature, latlng) => {
-            // Normalize feature.id (remove workspace prefix)
             const cleanId = feature.id.includes(':')
               ? feature.id.split(':')[1]
               : feature.id;
-
             const status = featureStatus[cleanId];
-
             const icon = (status === 'Completed' && completedIcon) || defaultIcon;
-
             return L.marker(latlng, { icon });
           }}
         />

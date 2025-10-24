@@ -7,15 +7,13 @@ import { saveData, getData, deleteData, getAllData } from '../../utils/indexedDB
 
 const API_BASE = '/api/fms';
 
+
 const FmsPanel = ({ featureID, onClose }) => {
   const [formData, setFormData] = useState({
     status: '',
     agent: '',
     newLatitude: '',
     newLongitude: '',
-
-
-
     newAltitude: '',
     images: [],
   });
@@ -149,19 +147,39 @@ const FmsPanel = ({ featureID, onClose }) => {
         <button className="close-btn" onClick={onClose}>×</button>
       </div>
 
-      <div className="form-group">
-        <label>Status</label>
-        <select
-          value={formData.status || ''}
-          onChange={(e) => handleChange('status', e.target.value)}
-        >
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-        </select>
-      </div>
+      
 
       <div className="form-group">
-        <label>Agent Name</label>
+  <label>Status</label>
+  <select
+    value={formData.status || ''}
+    onChange={(e) => {
+      const newStatus = e.target.value;
+      const allFilled =
+        formData.agent &&
+        formData.newLatitude &&
+        formData.newLongitude &&
+        formData.newAltitude &&
+        formData.images &&
+        formData.images.length > 0;
+
+      if (newStatus === 'Completed' && !allFilled) {
+        toast.error('Please fill all fields and upload at least one image before marking as Completed.');
+        return; // prevent changing status
+      }
+
+      handleChange('status', newStatus);
+    }}
+  >
+    <option value="Pending">Pending</option>
+    <option value="Completed">Completed</option>
+  </select>
+</div>
+
+
+
+      <div className="form-group">
+        <label>Agent Name*</label>
         <input
           type="text"
           value={formData.agent || ''}
@@ -170,7 +188,7 @@ const FmsPanel = ({ featureID, onClose }) => {
       </div>
 
       <div className="form-group">
-        <label>New Latitude</label>
+        <label>New Latitude*</label>
         <input
           type="number"
           value={formData.newLatitude || ''}
@@ -179,7 +197,7 @@ const FmsPanel = ({ featureID, onClose }) => {
       </div>
 
       <div className="form-group">
-        <label>New Longitude</label>
+        <label>New Longitude*</label>
         <input
           type="number"
           value={formData.newLongitude || ''}
@@ -188,7 +206,7 @@ const FmsPanel = ({ featureID, onClose }) => {
       </div>
 
       <div className="form-group">
-        <label>New Altitude</label>
+        <label>New Altitude*</label>
         <input
           type="number"
           value={formData.newAltitude || ''}
@@ -197,7 +215,7 @@ const FmsPanel = ({ featureID, onClose }) => {
       </div>
 
       <div className="form-group">
-        <label>Upload Images (max 5)</label>
+        <label>Upload Images* (max 5)</label>
         <input
           type="file"
           accept="image/*"

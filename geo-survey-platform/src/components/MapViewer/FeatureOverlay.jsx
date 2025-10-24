@@ -52,10 +52,13 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
       try {
         const res = await axios.get(wfsUrl);
         if (!cancelled) {
-          const feats = res.data.features || [];
+          const feats = (res.data.features || []).map((f) => ({
+            ...f,
+            name: f.properties?.Name || 'Unnamed', // Extract Name field
+          }));
+
           setFeatures(feats);
           onFeaturesLoaded?.(feats);
-          console.log(`✅ Loaded ${feats.length} WFS features`);
         }
       } catch (err) {
         if (!cancelled) console.error('❌ Failed to fetch WFS features:', err);
@@ -90,7 +93,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
     };
 
     fetchFeatureStatus();
-    const interval = setInterval(fetchFeatureStatus, 100); // every 1 s
+    const interval = setInterval(fetchFeatureStatus, 2000); // every 2s
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -103,24 +106,22 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
 
     geoJsonRef.current.eachLayer((layer) => {
       const feature = layer.feature;
-      if (!feature?.id) return;
+      if (!feature?.properties?.Name) return;
 
-      const cleanId = feature.id.includes(':')
-        ? feature.id.split(':')[1]
-        : feature.id;
+      const featureName = feature.properties.Name;
+    const status = featureStatus[featureName];
+    const icon = (status === 'Completed' && completedIcon) || defaultIcon;
 
-      const status = featureStatus[cleanId];
-      const icon = (status === 'Completed' && completedIcon) || defaultIcon;
-
-      if (layer.setIcon) layer.setIcon(icon);
-    });
-  }, [featureStatus]);
+    if (layer.setIcon) layer.setIcon(icon);
+  });
+}, [featureStatus]);
 
   // --- Handle feature click ---
   const handleEachFeature = (feature, layer) => {
-    layer.on({ click: () => onFeatureClick?.(feature.id) });
-    layer.bindTooltip(feature.id || 'Feature');
-  };
+  const featureName = feature.properties?.Name || 'Unnamed';
+  layer.bindTooltip(featureName, { direction: 'top' });
+  layer.on({ click: () => onFeatureClick?.(featureName) });
+};
 
   if (!config) return null;
 
@@ -129,6 +130,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
 
   return (
     <>
+      {/* Base WMS Layer */}
       <WMSTileLayer
         url={wmsUrl}
         layers={wmsLayer.name}
@@ -138,19 +140,19 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
         attribution="&copy; GeoServer"
       />
 
+      {/* Overlay GeoJSON Features */}
       {features.length > 0 && (
         <GeoJSON
           ref={geoJsonRef}
           data={features}
           onEachFeature={handleEachFeature}
           pointToLayer={(feature, latlng) => {
-            const cleanId = feature.id.includes(':')
-              ? feature.id.split(':')[1]
-              : feature.id;
-            const status = featureStatus[cleanId];
-            const icon = (status === 'Completed' && completedIcon) || defaultIcon;
-            return L.marker(latlng, { icon });
-          }}
+  const featureName = feature.properties?.Name;
+  const status = featureStatus[featureName];
+  const icon = (status === 'Completed' && completedIcon) || defaultIcon;
+
+  return L.marker(latlng, { icon });
+}}
         />
       )}
     </>

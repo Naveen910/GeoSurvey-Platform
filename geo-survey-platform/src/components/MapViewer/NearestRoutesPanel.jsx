@@ -24,8 +24,20 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
     const fetchNearest = async () => {
       setLoading(true);
       try {
-        // 1️⃣ Filter features within 30 km 
+        // 1️⃣ Fetch status API
+        const statusRes = await fetch('/api/fms/status');
+        const statusData = await statusRes.json();
+
+        // 2️⃣ Create a set of completed IDs
+        const completedIds = new Set(
+          statusData
+            .filter(s => s.status === 'Completed')
+            .map(s => s.id)
+        );
+
+        // 3️⃣ Filter nearby features excluding completed ones
         const nearby = wfsFeatures
+          .filter(f => !completedIds.has(f.properties.Name)) // exclude completed
           .map(f => {
             const [lon, lat] = f.geometry.coordinates;
             return {
@@ -37,7 +49,7 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
             };
           })
           .filter(f => f.approxDist <= 30)
-          .slice(0, 3); // limit to 3 for Google API
+          .slice(0, 25);
 
         if (nearby.length === 0) {
           setNearestRoutes([]);
@@ -45,8 +57,8 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
           return;
         }
 
-        // 2️⃣ Call backend Distance Matrix proxy
-        const response = await fetch('https://65.1.101.129/api/distance-matrix', {
+        // 4️⃣ Call Distance Matrix API
+        const response = await fetch('/api/distance-matrix', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -58,7 +70,6 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
         const data = await response.json();
         if (!data.rows) throw new Error('Invalid Distance Matrix response');
 
-        // 3️⃣ Map distances safely
         const enriched = nearby.map((f, i) => {
           const element = data.rows?.[0]?.elements?.[i];
           if (!element || element.status !== 'OK') {
@@ -71,10 +82,9 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
           };
         });
 
-        // 4️⃣ Sort by distance
         enriched.sort((a, b) => (a.distanceKm || Infinity) - (b.distanceKm || Infinity));
-
         setNearestRoutes(enriched);
+
       } catch (err) {
         console.error('Distance Matrix error:', err);
       } finally {
@@ -86,27 +96,30 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
   }, [userLocation, wfsFeatures]);
 
   return (
-    <div className="nearest-routes-panel">
-      <h3>Nearest Routes</h3>
-      {loading ? (
-        <p>Loading nearby routes...</p>
-      ) : nearestRoutes.length === 0 ? (
-        <p>No nearby routes found.</p>
-      ) : (
-        <ul>
-          {nearestRoutes.map((r, idx) => (
-            <li key={r.id || idx} className="route-item">
-              <b>{r.properties?.Name || `Route ${idx + 1}`}</b>
-              <br />
-              Distance: {r.distanceKm ? r.distanceKm.toFixed(2) + ' km' : 'N/A'}
-              <br />
-              Duration: {r.durationText}
-              <br />
-              
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="nearest-routes-panel open">
+      <div className="panel-header">
+        <h3>Nearest Routes</h3>
+      </div>
+
+      <div className="panel-content">
+        {loading ? (
+          <p>Loading nearby routes...</p>
+        ) : nearestRoutes.length === 0 ? (
+          <p>No nearby routes found.</p>
+        ) : (
+          <ul>
+            {nearestRoutes.slice(0, 3).map((r, idx) => (
+              <li key={r.id || idx} className="route-item">
+                <b>{r.properties?.Name || `Route ${idx + 1}`}</b>
+                <br />
+                Distance: {r.distanceKm ? r.distanceKm.toFixed(2) + ' km' : 'N/A'}
+                <br />
+                Duration: {r.durationText || 'N/A'}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

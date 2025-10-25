@@ -2,14 +2,16 @@
   position: absolute;
   top: 20px;
   left: 20px;
-  width: 280px;
-  max-height: 400px;
+  width: 160px;
+  max-height: 30dvh;
   overflow-y: auto;
+  scroll-behavior: smooth;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.3);
   padding: 12px;
   z-index: 1000;
+  cursor: pointer;
 }
 
 .panel-header {
@@ -17,31 +19,27 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  cursor: pointer;
+  z-index: 1000;
 }
 
 .panel-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-weight: bold;
+  font-size: 14px;
 }
 
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-}
+
 
 .route-item {
   border-bottom: 1px solid #ddd;
   padding: 6px 0;
 }
 
-.open-maps-btn {
-  background-color: #2196f3;
-  color: #fff;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 4px;
+
+.route-item {
+  margin-bottom: 10px;
+  line-height: 1.5;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
 }

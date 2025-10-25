@@ -24,7 +24,7 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
     const fetchNearest = async () => {
       setLoading(true);
       try {
-        // 1️⃣ Filter features within 1000 km (for testing; adjust later)
+        // 1️⃣ Filter features within 30 km 
         const nearby = wfsFeatures
           .map(f => {
             const [lon, lat] = f.geometry.coordinates;
@@ -36,8 +36,8 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
               approxDist: getDistanceKm(userLocation.lat, userLocation.lng, lat, lon),
             };
           })
-          .filter(f => f.approxDist <= 1000)
-          .slice(0, 5); // limit to 5 for Google API
+          .filter(f => f.approxDist <= 30)
+          .slice(0, 3); // limit to 3 for Google API
 
         if (nearby.length === 0) {
           setNearestRoutes([]);
@@ -102,17 +102,7 @@ const NearestRoutesPanel = ({ wfsFeatures, userLocation }) => {
               <br />
               Duration: {r.durationText}
               <br />
-              <button
-                onClick={() =>
-                  window.open(
-                    `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${r.lat},${r.lon}&travelmode=driving`,
-                    '_blank'
-                  )
-                }
-                className="popup-button"
-              >
-                Open in Google Maps
-              </button>
+              
             </li>
           ))}
         </ul>

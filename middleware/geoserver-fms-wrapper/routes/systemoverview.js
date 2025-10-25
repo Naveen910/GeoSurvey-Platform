@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-const GEOSERVER_URL = 'http://65.1.101.129:8080/geoserver/rest';
+const GEOSERVER_URL = 'https://65.1.101.129/geoserver/rest';
 const auth = {
   username: 'admin',
   password: 'geoserver',

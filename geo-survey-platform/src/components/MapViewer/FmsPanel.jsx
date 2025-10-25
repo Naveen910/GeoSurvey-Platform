@@ -15,6 +15,9 @@ const FmsPanel = ({ featureID, onClose }) => {
     newLatitude: '',
     newLongitude: '',
     newAltitude: '',
+    secondaryPoint: '',
+    cornerPoint: '',
+    remarks: '',
     images: [],
   });
 
@@ -170,6 +173,8 @@ const handleSave = async () => {
         formData.newLatitude &&
         formData.newLongitude &&
         formData.newAltitude &&
+        formData.secondaryPoint &&
+        formData.cornerPoint &&
         formData.images &&
         formData.images.length > 0;
 
@@ -221,6 +226,36 @@ const handleSave = async () => {
           type="number"
           value={formData.newAltitude || ''}
           onChange={(e) => handleChange('newAltitude', e.target.value)}
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Secondary Point*</label>
+        <input
+          type="text"
+          value={formData.secondaryPoint || ''}
+          onChange={(e) => handleChange('secondaryPoint', e.target.value)}
+        />
+      </div>
+
+      <div className="form-group">
+  <label>Corner Point*</label>
+  <select
+    value={formData.cornerPoint || ''}
+    onChange={(e) => handleChange('cornerPoint', e.target.value)}
+  >
+    <option value="No">No</option>
+    <option value="Yes">Yes</option>
+  </select>
+</div>
+
+      <div className="form-group">
+        <label>Remarks (max 50 chars)</label>
+        <input
+          type="text"
+          maxLength="50"
+          value={formData.remarks || ''}
+          onChange={(e) => handleChange('remarks', e.target.value)}
         />
       </div>
 

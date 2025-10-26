@@ -6,6 +6,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 
+import loadingGif from '../../assets/loading.gif';
 import homeIcon from '../../assets/MapViewer/home.png';
 import searchIcon from '../../assets/search.png';
 import downloadIcon from '../../assets/MapViewer/download.png';
@@ -33,7 +34,7 @@ const MapHeader = ({ onSearch }) => {
     setShowMenu(false);
     setDownloading(true);
 
-    const res = await axios.get('/api/fms/all');
+    const res = await axios.get('https://65.1.101.129/api/fms/all');
     let data = res.data || [];
 
     // Only Completed forms
@@ -192,26 +193,33 @@ const MapHeader = ({ onSearch }) => {
 
         {/* Download Dropdown */}
         <div className="download-wrapper" ref={menuRef}>
-          {downloading ? (
-            <div className="spinner" title="Downloading..." />
-          ) : (
-            <img
-              src={downloadIcon}
-              alt="Download"
-              className="icon-button"
-              title="Download options"
-              onClick={() => setShowMenu((prev) => !prev)}
-              style={{ cursor: 'pointer' }}
-            />
-          )}
+        {downloading ? (
+  <img
+    src={loadingGif}
+    alt="Loading..."
+    className="loading-gif"
+    title="Downloading..."
+  />
+) : (
+  <img
+    src={downloadIcon}
+    alt="Download"
+    className="icon-button"
+    title="Download options"
+    onClick={() => setShowMenu((prev) => !prev)}
+    style={{ cursor: 'pointer' }}
+  />
+)}
 
-          {showMenu && !downloading && (
-            <div className="download-menu">
-              <button onClick={() => handleDownload('csv')}>Download CSV</button>
-              <button onClick={() => handleDownload('xlsx')}>Download XLSX</button>
-            </div>
-          )}
-        </div>
+
+  {showMenu && !downloading && (
+    <div className="download-menu">
+      <button onClick={() => handleDownload('csv')}>Download CSV</button>
+      <button onClick={() => handleDownload('xlsx')}>Download XLSX</button>
+    </div>
+  )}
+</div>
+
       </div>
     </div>
   );

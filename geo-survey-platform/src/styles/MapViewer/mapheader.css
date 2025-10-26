@@ -87,8 +87,8 @@
 
 /* Icon Buttons */
 .icon-button {
-  width: 20px;
-  height: 20px;
+  width: 23px;
+  height: 23px;
   cursor: pointer;
 }
 
@@ -103,11 +103,23 @@
 }
 
 .loading-gif {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
+  width: 20px;
+  height: 20px;
   cursor: wait;
+  animation: spin 1s linear infinite;
+  animation-direction: reverse;
 }
+
+/* keyframes for smooth rotation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 
 
 

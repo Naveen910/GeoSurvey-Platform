@@ -6,7 +6,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 
-import loadingGif from '../../assets/loading.gif';
+import loading from '../../assets/MapViewer/refresh.png';
 import homeIcon from '../../assets/MapViewer/home.png';
 import searchIcon from '../../assets/search.png';
 import downloadIcon from '../../assets/MapViewer/download.png';
@@ -195,7 +195,7 @@ const MapHeader = ({ onSearch }) => {
         <div className="download-wrapper" ref={menuRef}>
         {downloading ? (
   <img
-    src={loadingGif}
+    src={loading}
     alt="Loading..."
     className="loading-gif"
     title="Downloading..."

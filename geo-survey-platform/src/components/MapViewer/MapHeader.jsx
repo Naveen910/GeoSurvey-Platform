@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/MapViewer/mapheader.css';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 
@@ -13,6 +14,7 @@ const MapHeader = ({ onSearch }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const menuRef = useRef();
 
   const handleGoHome = () => navigate('/');
@@ -23,79 +25,139 @@ const MapHeader = ({ onSearch }) => {
     }
   };
 
+  
+
   // -------------------- DOWNLOAD HANDLER --------------------
   const handleDownload = async (type) => {
-    try {
-      setShowMenu(false);
-      const res = await axios.get('https://65.1.101.129/api/fms/all');
-      let data = res.data || [];
+  try {
+    setShowMenu(false);
+    setDownloading(true);
 
-      // ✅ Filter only Completed forms
-      data = data.filter((item) => item.formData?.status === 'Completed');
+    const res = await axios.get('/api/fms/all');
+    let data = res.data || [];
 
-      if (!data.length) {
-        alert('No completed records found.');
-        return;
-      }
+    // Only Completed forms
+    data = data.filter((item) => item.formData?.status === 'Completed');
 
-      // Format data
-      const formatted = data.map((item, i) => ({
+    if (!data.length) {
+      alert('No completed records found.');
+      setDownloading(false);
+      return;
+    }
+
+    // Helper: base64 → Uint8Array
+    const base64ToUint8Array = (base64) => {
+      const binaryString = window.atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
+      return bytes;
+    };
+
+    if (type === 'csv') {
+      const csvData = data.map((item, i) => ({
         '#': i + 1,
-        FeatureID: item.featureID || '',
-        Agent: item.formData?.agent || '',
+        Feature_ID: item.featureID || '',
+        Agent_Name: item.formData?.agent || '',
         Status: item.formData?.status || '',
-        Latitude: item.formData?.newLatitude || '',
-        Longitude: item.formData?.newLongitude || '',
-        Altitude: item.formData?.newAltitude || '',
+        New_Latitude: item.formData?.newLatitude || '',
+        New_Longitude: item.formData?.newLongitude || '',
+        New_Altitude: item.formData?.newAltitude || '',
+        Secondary_Point: item.formData?.secondaryPoint || '',
+        Corner_Point: item.formData?.cornerPoint || '',
+        Remarks: item.formData?.remarks || '',
         CreatedAt: item.createdAt ? new Date(item.createdAt).toLocaleString() : '',
         UpdatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '',
-        'Image Preview Links': (item.images || []).map((img, idx) => {
-          try {
-            const blob = b64toBlob(img, 'image/jpeg');
-            const url = URL.createObjectURL(blob);
-            return `Image_${idx + 1}: ${url}`;
-          } catch {
-            return 'Invalid Image';
-          }
-        }).join(', ')
       }));
 
-      const ws = XLSX.utils.json_to_sheet(formatted);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Completed FMS');
+      const ws = XLSX.utils.json_to_sheet(csvData);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'Completed_FMS_Data.csv');
+    }
 
-      if (type === 'xlsx') {
-        const xlsBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        saveAs(new Blob([xlsBuffer], { type: 'application/octet-stream' }), 'Completed_FMS_Data.xlsx');
-      } else if (type === 'csv') {
-        const csv = XLSX.utils.sheet_to_csv(ws);
-        const csvBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        saveAs(csvBlob, 'Completed_FMS_Data.csv');
+    if (type === 'xlsx') {
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Completed FMS');
+
+      // Columns
+      const baseColumns = [
+        { header: '#', key: 'sno', width: 6, center: true, alignment: { vertical: 'center' } },
+        { header: 'Feature ID', key: 'featureID', width: 15, center: true, alignment: { vertical: 'center' } },
+        { header: 'Agent Name', key: 'agent', width: 20, center: true, alignment: { vertical: 'center' } },
+        { header: 'Status', key: 'status', width: 12, center: true, alignment: { vertical: 'center' } },
+        { header: 'New Latitude', key: 'lat', width: 15, center: true, alignment: { vertical: 'center' } },
+        { header: 'New Longitude', key: 'lon', width: 15, center: true, alignment: { vertical: 'center' } },
+        { header: 'New Altitude', key: 'alt', width: 15, center: true, alignment: { vertical: 'center' } },
+        { header: 'Secondary Point', key: 'secondaryPoint', width: 15, center: true, alignment: { vertical: 'center' } },
+        { header: 'Corner Point', key: 'cornerPoint', width: 12, center: true, alignment: { vertical: 'center' } },
+        { header: 'Remarks', key: 'remarks', width: 25, center: true, alignment: { vertical: 'center' } },
+        { header: 'Created At', key: 'createdAt', width: 25, center: true, alignment: { vertical: 'center' } },
+        { header: 'Updated At', key: 'updatedAt', width: 25, center: true, alignment: { vertical: 'center' } },
+      ];
+
+      // Add 5 image columns
+      for (let j = 1; j <= 5; j++) {
+        baseColumns.push({ header: `Image ${j}`, key: `img${j}`, width: 15, center: true, alignment: { vertical: 'center' } });
       }
 
-      alert(`✅ Downloaded ${type.toUpperCase()} for Completed records`);
-    } catch (err) {
-      console.error('❌ Download error:', err);
-      alert('Failed to download data.');
-    }
-  };
+      sheet.columns = baseColumns;
 
-  // Helper: Convert base64 → Blob
-  const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
-    if (!b64Data) return null;
-    const base64 = b64Data.includes(',') ? b64Data.split(',')[1] : b64Data;
-    const byteCharacters = atob(base64);
-    const byteArrays = [];
-    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-      const slice = byteCharacters.slice(offset, offset + sliceSize);
-      const byteNumbers = new Array(slice.length);
-      for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
-      byteArrays.push(new Uint8Array(byteNumbers));
-    }
-    return new Blob(byteArrays, { type: contentType });
-  };
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        const rowIndex = i + 2; // row 1 = header
 
-  // Close dropdown when clicking outside
+        const rowValues = {
+          sno: i + 1,
+          featureID: item.featureID || '',
+          agent: item.formData?.agent || '',
+          status: item.formData?.status || '',
+          lat: item.formData?.newLatitude || '',
+          lon: item.formData?.newLongitude || '',
+          alt: item.formData?.newAltitude || '',
+          secondaryPoint: item.formData?.secondaryPoint || '',
+          cornerPoint: item.formData?.cornerPoint || '',
+          remarks: item.formData?.remarks || '',
+          createdAt: item.createdAt ? new Date(item.createdAt).toLocaleString() : '',
+          updatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '',
+        };
+
+        sheet.addRow(rowValues);
+
+        const images = item.formData?.images || [];
+        images.slice(0, 5).forEach((img, idx) => {
+          const base64Data = img.includes(',') ? img.split(',')[1] : img;
+          const ext = img.includes('png') ? 'png' : 'jpeg';
+          const imageUint8 = base64ToUint8Array(base64Data);
+
+          const imageId = workbook.addImage({
+            buffer: imageUint8,
+            extension: ext,
+          });
+
+          sheet.addImage(imageId, {
+            tl: { col: 12 + idx, row: rowIndex - 1 },
+            ext: { width: 70, height: 70 },
+          });
+        });
+
+        sheet.getRow(rowIndex).height = 80;
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), 'Completed_FMS_Data.xlsx');
+    }
+
+    alert(`✅ ${type.toUpperCase()} downloaded successfully.`);
+  } catch (err) {
+    console.error('❌ Download error:', err);
+    alert('Failed to download data.');
+  } finally {
+    setDownloading(false);
+  }
+};
+
+
+  // -------------------- OUTSIDE CLICK CLOSE --------------------
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -105,8 +167,6 @@ const MapHeader = ({ onSearch }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // ------------------------------------------------------------
 
   return (
     <div className="map-header">
@@ -130,17 +190,22 @@ const MapHeader = ({ onSearch }) => {
           />
         </div>
 
-        {/* Download Dropdown Menu */}
+        {/* Download Dropdown */}
         <div className="download-wrapper" ref={menuRef}>
-          <img
-            src={downloadIcon}
-            alt="Download"
-            className="icon-button"
-            title="Download options"
-            onClick={() => setShowMenu((prev) => !prev)}
-            style={{ cursor: 'pointer' }}
-          />
-          {showMenu && (
+          {downloading ? (
+            <div className="spinner" title="Downloading..." />
+          ) : (
+            <img
+              src={downloadIcon}
+              alt="Download"
+              className="icon-button"
+              title="Download options"
+              onClick={() => setShowMenu((prev) => !prev)}
+              style={{ cursor: 'pointer' }}
+            />
+          )}
+
+          {showMenu && !downloading && (
             <div className="download-menu">
               <button onClick={() => handleDownload('csv')}>Download CSV</button>
               <button onClick={() => handleDownload('xlsx')}>Download XLSX</button>

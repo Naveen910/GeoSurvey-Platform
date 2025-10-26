@@ -34,7 +34,7 @@ const MapHeader = ({ onSearch }) => {
     setShowMenu(false);
     setDownloading(true);
 
-    const res = await axios.get('https://65.1.101.129/api/fms/all');
+    const res = await axios.get('/api/fms/all');
     let data = res.data || [];
 
     // Only Completed forms

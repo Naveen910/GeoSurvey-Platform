@@ -143,7 +143,7 @@ const FmsPanel = ({ featureID, onClose }) => {
       files.map(async (file) => {
         // Compress before converting to Base64
         const compressedFile = await imageCompression(file, {
-          maxSizeMB: 0.8,
+          maxSizeMB: 0.5,
           useWebWorker: true,
           fileType: 'image/jpeg',
         });

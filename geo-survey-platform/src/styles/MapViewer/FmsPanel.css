@@ -1,23 +1,17 @@
 .fms-panel {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 10px;
+  left: 10px;
   width: 300px;
-
-  /* Viewport-aware height fix */
-  height: 75dvh; /* adjusts for address bar + top/bottom spacing */
+  height: 75dvh; 
   overflow-y: auto; /* enables vertical scroll if needed */
-
   background: #f9f9f9;
   border-right: 1px solid #ccc;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
   z-index: 1000;
-  border-radius: 16px;
-
-  /* Smooth scroll for better UX */
+  border-radius: 10px;
   scroll-behavior: smooth;
-
   /* Mobile Safari safe-area fix (for notches / bottom bars) */
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }

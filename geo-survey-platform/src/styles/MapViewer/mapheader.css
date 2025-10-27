@@ -126,15 +126,15 @@
 
 .download-menu {
   position: absolute;
-  right: 0;
-  top: 45px;
+  right: -15px;
+  top: 55px;
   background: white;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   z-index: 2000;
-  min-width: 150px;
-  animation: fadeIn 0.2s ease;
+  min-width: 130px;
+  animation: fadeIn 0.3s ease, fadeOut 0.3s ease 3s;
 }
 
 .download-menu button {

@@ -125,12 +125,13 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
 
   if (!config) return null;
 
-  const wmsLayer = config.wms?.layers?.[0];
-  const wmsUrl = `${config.geoserverUrl}${config.wms.endpoint}`;
+  //const wmsLayer = config.wms?.layers?.[0];
+  //const wmsUrl = `${config.geoserverUrl}${config.wms.endpoint}`;
 
   return (
     <>
       {/* Base WMS Layer */}
+      {/* 
       <WMSTileLayer
         url={wmsUrl}
         layers={wmsLayer.name}
@@ -139,6 +140,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
         version="1.1.0"
         attribution="&copy; GeoServer"
       />
+      */}
 
       {/* Overlay GeoJSON Features */}
       {features.length > 0 && (

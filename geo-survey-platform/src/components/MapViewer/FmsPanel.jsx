@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import imageCompression from 'browser-image-compression'; // 🆕
+import imageCompression from 'browser-image-compression';
 import '../../styles/MapViewer/FmsPanel.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { saveData, getData, deleteData, getAllData } from '../../utils/indexedDB';
 
 const API_BASE = '/api/fms';
+const ADMIN_PASSWORD = 'admin123';
 
 // 🧩 Helper to compress Base64 image
 async function compressBase64Image(base64) {
@@ -15,12 +16,7 @@ async function compressBase64Image(base64) {
     const blob = await response.blob();
     const file = new File([blob], 'image.jpg', { type: blob.type });
 
-    const options = {
-      maxSizeMB: 0.8,
-      useWebWorker: true,
-      fileType: 'image/jpeg',
-    };
-
+    const options = { maxSizeMB: 0.8, useWebWorker: true, fileType: 'image/jpeg' };
     const compressedFile = await imageCompression(file, options);
 
     return await new Promise((resolve, reject) => {
@@ -31,7 +27,7 @@ async function compressBase64Image(base64) {
     });
   } catch (err) {
     console.error('Compression failed:', err);
-    return base64; // fallback — keep original if failed
+    return base64;
   }
 }
 
@@ -48,7 +44,14 @@ const FmsPanel = ({ featureID, onClose }) => {
     images: [],
   });
 
-  // Load data from IndexedDB first, fallback to server
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // "edit" | "delete"
+
+  // Load data
   useEffect(() => {
     if (!featureID) return;
 
@@ -56,7 +59,6 @@ const FmsPanel = ({ featureID, onClose }) => {
       let localData = await getData(featureID);
 
       if (localData?.formData) {
-        // 🧩 compress any old uncompressed Base64 images (migration)
         if (localData.formData.images?.length) {
           const compressedImages = await Promise.all(
             localData.formData.images.map((img) => compressBase64Image(img))
@@ -78,12 +80,11 @@ const FmsPanel = ({ featureID, onClose }) => {
     loadData();
   }, [featureID]);
 
-  // Auto-sync all local data when online
+  // Auto-sync
   const autoSync = async () => {
     const allLocalData = await getAllData();
     for (let item of allLocalData) {
       try {
-        // 🧩 Compress existing Base64 images before upload
         if (item.formData?.images?.length) {
           const compressedImages = await Promise.all(
             item.formData.images.map((img) => compressBase64Image(img))
@@ -93,8 +94,8 @@ const FmsPanel = ({ featureID, onClose }) => {
         }
 
         await axios.put(`${API_BASE}/${item.featureID}`, { formData: item.formData });
-        await deleteData(item.featureID); // remove local copy after sync
-        toast.success(`Feature ${item.featureID} synced to server`);
+        await deleteData(item.featureID);
+        toast.success(`Feature ${item.featureID} synced`);
       } catch {
         try {
           await axios.post(`${API_BASE}`, { featureID: item.featureID, formData: item.formData });
@@ -107,23 +108,18 @@ const FmsPanel = ({ featureID, onClose }) => {
     }
   };
 
-  // Listen for network coming back online
   useEffect(() => {
     window.addEventListener('online', autoSync);
     return () => window.removeEventListener('online', autoSync);
   }, []);
 
-  // Handle field changes
-  const [isSaved, setIsSaved] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
+  // Handle change
   const handleChange = async (key, value) => {
     const updated = { ...formData, [key]: value };
     setFormData(updated);
     setIsSaved(false);
-    await saveData(featureID, updated); // save locally
+    await saveData(featureID, updated);
 
-    // Try immediate sync
     axios.put(`${API_BASE}/${featureID}`, { formData: updated }).catch(() => {
       axios.post(`${API_BASE}`, { featureID, formData: updated }).catch(() => {
         toast.info('Data saved locally. Will sync when online.');
@@ -131,8 +127,8 @@ const FmsPanel = ({ featureID, onClose }) => {
     });
   };
 
-  // Handle image upload (🧩 compress new uploads)
   const handleImageUpload = async (e) => {
+    if (!isEditing) return toast.warn('Unlock edit mode to upload images.');
     const files = Array.from(e.target.files);
     if (files.length + (formData.images?.length || 0) > 5) {
       toast.error('You can upload a maximum of 5 images.');
@@ -141,13 +137,11 @@ const FmsPanel = ({ featureID, onClose }) => {
 
     const newImages = await Promise.all(
       files.map(async (file) => {
-        // Compress before converting to Base64
         const compressedFile = await imageCompression(file, {
           maxSizeMB: 0.5,
           useWebWorker: true,
           fileType: 'image/jpeg',
         });
-
         return await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
@@ -156,32 +150,32 @@ const FmsPanel = ({ featureID, onClose }) => {
         });
       })
     );
-
     handleChange('images', [...(formData.images || []), ...newImages]);
   };
 
-  // Delete an image
   const handleDeleteImage = (index) => {
+    if (!isEditing) return toast.warn('Unlock edit mode to delete images.');
     const updatedImages = formData.images.filter((_, i) => i !== index);
     handleChange('images', updatedImages);
     toast.info('Image deleted');
   };
 
-  // Save manually
   const handleSave = async () => {
     setIsSaving(true);
-    await saveData(featureID, formData); // always save locally
+    await saveData(featureID, formData);
     try {
       await axios.put(`${API_BASE}/${featureID}`, { formData });
       await deleteData(featureID);
       toast.success('Saved successfully!');
       setIsSaved(true);
+      setIsEditing(false);
     } catch {
       try {
         await axios.post(`${API_BASE}`, { featureID, formData });
         await deleteData(featureID);
         toast.success('Created new entry!');
         setIsSaved(true);
+        setIsEditing(false);
       } catch {
         toast.info('Data saved locally. Will sync when online.');
       }
@@ -190,19 +184,75 @@ const FmsPanel = ({ featureID, onClose }) => {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${API_BASE}/${featureID}`);
+      await deleteData(featureID);
+      toast.success('Feature deleted successfully');
+      onClose();
+    } catch {
+      await deleteData(featureID);
+      toast.info('Deleted locally (sync later)');
+      onClose();
+    }
+  };
+
+  // 🔐 Password gate for Edit/Delete
+  const requestPassword = (action) => {
+    setPendingAction(action);
+    setShowPasswordPrompt(true);
+  };
+
+  const verifyPassword = () => {
+    if (passwordInput === ADMIN_PASSWORD) {
+      setShowPasswordPrompt(false);
+      setPasswordInput('');
+      if (pendingAction === 'edit') {
+        setIsEditing(true);
+      } else if (pendingAction === 'delete') {
+        handleDelete();
+      }
+    } else {
+      toast.error('Incorrect password');
+    }
+  };
+
   if (!featureID) return null;
+
+  const disabled = !isEditing;
 
   return (
     <div className="fms-panel">
       <div className="fms-header">
         <h2>Feature: {featureID}</h2>
-        <button className="close-btn" onClick={onClose}>×</button>
+        <button className="close-btn" onClick={onClose}>Close</button>
       </div>
 
+      {/* Password Prompt */}
+      {showPasswordPrompt && (
+        <div className="password-modal">
+          <div className="password-box">
+            <h3>Enter Password</h3>
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              placeholder="password"
+            />
+            <div className="pw-actions">
+              <button onClick={verifyPassword}>Confirm</button>
+              <button onClick={() => setShowPasswordPrompt(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form Fields */}
       <div className="form-group">
         <label>Status</label>
         <select
           value={formData.status || ''}
+          disabled={disabled}
           onChange={(e) => {
             const newStatus = e.target.value;
             const allFilled =
@@ -212,11 +262,10 @@ const FmsPanel = ({ featureID, onClose }) => {
               formData.newAltitude &&
               formData.secondaryPoint &&
               formData.cornerPoint &&
-              formData.images &&
-              formData.images.length > 0;
+              formData.images?.length > 0;
 
             if (newStatus === 'Completed' && !allFilled) {
-              toast.error('Please fill all fields and upload at least one image before marking as Completed.');
+              toast.error('Fill all fields before marking Completed.');
               return;
             }
             handleChange('status', newStatus);
@@ -227,55 +276,29 @@ const FmsPanel = ({ featureID, onClose }) => {
         </select>
       </div>
 
-      <div className="form-group">
-        <label>Agent Name*</label>
-        <input
-          type="text"
-          value={formData.agent || ''}
-          onChange={(e) => handleChange('agent', e.target.value)}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>New Latitude*</label>
-        <input
-          type="number"
-          value={formData.newLatitude || ''}
-          onChange={(e) => handleChange('newLatitude', e.target.value)}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>New Longitude*</label>
-        <input
-          type="number"
-          value={formData.newLongitude || ''}
-          onChange={(e) => handleChange('newLongitude', e.target.value)}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>New Altitude*</label>
-        <input
-          type="number"
-          value={formData.newAltitude || ''}
-          onChange={(e) => handleChange('newAltitude', e.target.value)}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Secondary Point*</label>
-        <input
-          type="text"
-          value={formData.secondaryPoint || ''}
-          onChange={(e) => handleChange('secondaryPoint', e.target.value)}
-        />
-      </div>
+      {[
+        ['Agent Name*', 'agent'],
+        ['New Latitude*', 'newLatitude', 'number'],
+        ['New Longitude*', 'newLongitude', 'number'],
+        ['New Altitude*', 'newAltitude', 'number'],
+        ['Secondary Point*', 'secondaryPoint'],
+      ].map(([label, key, type]) => (
+        <div className="form-group" key={key}>
+          <label>{label}</label>
+          <input
+            type={type || 'text'}
+            value={formData[key] || ''}
+            onChange={(e) => handleChange(key, e.target.value)}
+            disabled={disabled}
+          />
+        </div>
+      ))}
 
       <div className="form-group">
         <label>Corner Point*</label>
         <select
           value={formData.cornerPoint || ''}
+          disabled={disabled}
           onChange={(e) => handleChange('cornerPoint', e.target.value)}
         >
           <option value="No">No</option>
@@ -288,6 +311,7 @@ const FmsPanel = ({ featureID, onClose }) => {
         <input
           type="text"
           maxLength="50"
+          disabled={disabled}
           value={formData.remarks || ''}
           onChange={(e) => handleChange('remarks', e.target.value)}
         />
@@ -295,33 +319,42 @@ const FmsPanel = ({ featureID, onClose }) => {
 
       <div className="form-group">
         <label>Upload Images* (max 5)</label>
-        <input type="file" accept="image/*" multiple onChange={handleImageUpload} />
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+          disabled={disabled}
+        />
         <div className="image-preview-container">
           {formData.images?.map((img, idx) => (
             <div key={idx} className="image-preview">
               <img src={img} alt={`upload-${idx}`} />
-              <button onClick={() => handleDeleteImage(idx)}>×</button>
+              {isEditing && <button onClick={() => handleDeleteImage(idx)}>×</button>}
             </div>
           ))}
         </div>
       </div>
 
+      {/* Actions */}
       <div className="fms-panel-actions">
-        <button
-          className={`save-button ${isSaved ? 'saved' : ''}`}
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <>
-              <span className="spinner"></span> Saving...
-            </>
-          ) : isSaved ? (
-            <>✓ Saved</>
-          ) : (
-            'Save'
-          )}
-        </button>
+        {!isEditing ? (
+          <>
+            <button onClick={() => requestPassword('edit')} className="edit-btn">Edit</button>
+            <button onClick={() => requestPassword('delete')} className="delete-btn">
+              Delete
+            </button>
+          </>
+        ) : (
+          <>
+            <button onClick={handleSave} disabled={isSaving} className="save-btn">
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+            <button onClick={() => setIsEditing(false)} className="cancel-btn">
+              Cancel
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

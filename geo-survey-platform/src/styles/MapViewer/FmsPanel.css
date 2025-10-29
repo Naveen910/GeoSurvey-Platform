@@ -135,6 +135,22 @@ textarea {
   cursor: not-allowed;
 }
 
+
+/* overlay to block map and background clicks */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6); /* dim background */
+  z-index: 5000; /* higher than map & panel */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all; /* block background interactions */
+}
+
 /* === Password Modal === */
 .password-modal {
   position: fixed;
@@ -146,7 +162,7 @@ textarea {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 5100;
   backdrop-filter: blur(2px);
 }
 

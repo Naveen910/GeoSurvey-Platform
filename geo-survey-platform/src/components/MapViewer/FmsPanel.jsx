@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 import axios from 'axios';
 import imageCompression from 'browser-image-compression';
 import '../../styles/MapViewer/FmsPanel.css';
@@ -228,24 +229,6 @@ const FmsPanel = ({ featureID, onClose }) => {
         <button className="close-btn" onClick={onClose}>Close</button>
       </div>
 
-      {/* Password Prompt */}
-      {showPasswordPrompt && (
-        <div className="password-modal">
-          <div className="password-box">
-            <h3>Enter Password</h3>
-            <input
-              type="password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              placeholder="password"
-            />
-            <div className="pw-actions">
-              <button onClick={verifyPassword}>Confirm</button>
-              <button onClick={() => setShowPasswordPrompt(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Form Fields */}
       <div className="form-group">
@@ -356,7 +339,32 @@ const FmsPanel = ({ featureID, onClose }) => {
           </>
         )}
       </div>
+
+      {/* Password Prompt */}
+    {showPasswordPrompt &&
+    ReactDOM.createPortal(
+    <div className="modal-overlay">
+      <div className="password-box">
+        <h3>Enter Password</h3>
+        <input
+          type="password"
+          value={passwordInput}
+          onChange={(e) => setPasswordInput(e.target.value)}
+          placeholder="password"
+        />
+        <div className="pw-actions">
+          <button onClick={verifyPassword}>Confirm</button>
+          <button onClick={() => setShowPasswordPrompt(false)}>Cancel</button>
+        </div>
+      </div>
+    </div>,
+    document.body // <-- renders outside .fms-panel
+  )
+}
+
     </div>
+
+    
   );
 };
 

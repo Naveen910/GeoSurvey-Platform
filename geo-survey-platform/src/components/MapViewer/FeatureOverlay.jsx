@@ -3,7 +3,8 @@ import axios from 'axios';
 import { WMSTileLayer, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import pinIcon from '../../assets/pin.png';
-import greenPinIcon from '../../assets/greenpin.png'; // green pin icon
+import greenPinIcon from '../../assets/greenpin.png';
+import bluePinIcon from '../../assets/bluepin.png';
 
 // Default marker (Pending)
 const defaultIcon = new L.Icon({
@@ -20,6 +21,21 @@ const completedIcon = new L.Icon({
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
 });
+
+// Blue marker (GCP_517–GCP_689)
+const blueIcon = new L.Icon({
+  iconUrl: bluePinIcon,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
+
+// Function to detect blue features
+const isBlueFeature = (name) => {
+  if (!name || !name.startsWith("GCP_")) return false;
+  const num = parseInt(name.split("_")[1], 10);
+  return num >= 517 && num <= 689;
+};
 
 const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
   const [features, setFeatures] = useState([]);
@@ -54,7 +70,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
         if (!cancelled) {
           const feats = (res.data.features || []).map((f) => ({
             ...f,
-            name: f.properties?.Name || 'Unnamed', // Extract Name field
+            name: f.properties?.Name || 'Unnamed',
           }));
 
           setFeatures(feats);
@@ -93,7 +109,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
     };
 
     fetchFeatureStatus();
-    const interval = setInterval(fetchFeatureStatus, 5000); // every 5s
+    const interval = setInterval(fetchFeatureStatus, 5000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -109,39 +125,34 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
       if (!feature?.properties?.Name) return;
 
       const featureName = feature.properties.Name;
-    const status = featureStatus[featureName];
-    const icon = (status === 'Completed' && completedIcon) || defaultIcon;
+      const status = featureStatus[featureName];
 
-    if (layer.setIcon) layer.setIcon(icon);
-  });
-}, [featureStatus]);
+      let icon;
+
+      if (status === "Completed") {
+        icon = completedIcon;           // Completed takes highest priority
+      } else if (isBlueFeature(featureName)) {
+        icon = blueIcon;                // Blue only if NOT completed
+      } else {
+        icon = defaultIcon;
+      }
+
+
+      if (layer.setIcon) layer.setIcon(icon);
+    });
+  }, [featureStatus]);
 
   // --- Handle feature click ---
   const handleEachFeature = (feature, layer) => {
-  const featureName = feature.properties?.Name || 'Unnamed';
-  layer.bindTooltip(featureName, { direction: 'top' });
-  layer.on({ click: () => onFeatureClick?.(featureName) });
-};
+    const featureName = feature.properties?.Name || 'Unnamed';
+    layer.bindTooltip(featureName, { direction: 'top' });
+    layer.on({ click: () => onFeatureClick?.(featureName) });
+  };
 
   if (!config) return null;
 
-  //const wmsLayer = config.wms?.layers?.[0];
-  //const wmsUrl = `${config.geoserverUrl}${config.wms.endpoint}`;
-
   return (
     <>
-      {/* Base WMS Layer */}
-      {/* 
-      <WMSTileLayer
-        url={wmsUrl}
-        layers={wmsLayer.name}
-        format="image/png"
-        transparent={true}
-        version="1.1.0"
-        attribution="&copy; GeoServer"
-      />
-      */}
-
       {/* Overlay GeoJSON Features */}
       {features.length > 0 && (
         <GeoJSON
@@ -149,12 +160,22 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
           data={features}
           onEachFeature={handleEachFeature}
           pointToLayer={(feature, latlng) => {
-  const featureName = feature.properties?.Name;
-  const status = featureStatus[featureName];
-  const icon = (status === 'Completed' && completedIcon) || defaultIcon;
+            const featureName = feature.properties?.Name;
+            const status = featureStatus[featureName];
 
-  return L.marker(latlng, { icon });
-}}
+            let icon;
+
+            if (status === "Completed") {
+              icon = completedIcon;           // Completed first
+            } else if (isBlueFeature(featureName)) {
+              icon = blueIcon;
+            } else {
+              icon = defaultIcon;
+            }
+
+
+            return L.marker(latlng, { icon });
+          }}
         />
       )}
     </>

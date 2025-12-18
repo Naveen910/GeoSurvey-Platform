@@ -109,7 +109,7 @@ const FeatureOverlay = ({ onFeatureClick, onFeaturesLoaded }) => {
     };
 
     fetchFeatureStatus();
-    const interval = setInterval(fetchFeatureStatus, 5000);
+    const interval = setInterval(fetchFeatureStatus, 30000);
     return () => {
       cancelled = true;
       clearInterval(interval);

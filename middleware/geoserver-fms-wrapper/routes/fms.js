@@ -3,17 +3,6 @@ const router = express.Router();
 const FormSchema = require('../models/FormSchema');
 
 
-// GET /api/fms/all
-router.get('/all', async (req, res) => {
-  try {
-    const allForms = await FormSchema.find({}, { _id: 0 }).lean();
-    res.json(allForms);
-  } catch (err) {
-    console.error('❌ Error fetching all forms:', err);
-    res.status(500).json({ message: 'Failed to fetch all FMS records' });
-  }
-});
-
 // GET /api/fms/status
 router.get('/status', async (req, res) => {
   try {

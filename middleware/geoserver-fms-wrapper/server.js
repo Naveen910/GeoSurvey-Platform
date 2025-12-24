@@ -32,6 +32,8 @@ mongoose.connect('mongodb://65.1.101.129:27017/geoserver_fms', {
 app.use('/api/fms', fmsRoutes);
 app.use('/api/systemoverview', systemoverviewRoutes);
 app.use('/api/distance-matrix', distanceMatrixRoutes);
+app.use('/api/fms-download', require('./routes/fms-download'));
+
 
 
 // GeoServer Config API

@@ -80,147 +80,32 @@ const MapHeader = ({ onSearch }) => {
   };
 
   // -------------------- DOWNLOAD HANDLER --------------------
-  const handleDownload = async (type) => {
-    try {
-      setShowMenu(false);
-      setDownloading(true);
+const handleDownload = async (type) => {
+  try {
+    setShowMenu(false);
+    setDownloading(true);
 
-      const res = await axios.get('/api/fms/all');
-      let data = res.data || [];
-      data = data.filter((item) => item.formData?.status === 'Completed');
+    const res = await axios.get(`/api/fms/download?type=${type}`, {
+      responseType: 'blob',
+    });
 
-      if (!data.length) {
-        toast.info('No completed records found.');
-        setDownloading(false);
-        return;
-      }
+    const filename =
+      type === 'csv'
+        ? 'Completed_FMS_Data.csv'
+        : 'Completed_FMS_Data.zip';
 
-      const base64ToUint8Array = (base64) => {
-        const binaryString = window.atob(base64);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
-        return bytes;
-      };
+    saveAs(res.data, filename);
 
-      if (type === 'csv') {
-        const csvData = data.map((item, i) => ({
-          '#': i + 1,
-          Feature_ID: item.featureID || '',
-          Agent_Name: item.formData?.agent || '',
-          Status: item.formData?.status || '',
-          New_Latitude: item.formData?.newLatitude || '',
-          New_Longitude: item.formData?.newLongitude || '',
-          New_Altitude: item.formData?.newAltitude || '',
-          Secondary_Point: item.formData?.secondaryPoint || '',
-          Corner_Point: item.formData?.cornerPoint || '',
-          Remarks: item.formData?.remarks || '',
-          CreatedAt: item.createdAt ? new Date(item.createdAt).toLocaleString() : '',
-          UpdatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '',
-        }));
+    incrementDownloadCount();
+    toast.success(`${type.toUpperCase()} downloaded successfully`);
+  } catch (err) {
+    console.error(err);
+    toast.error('Failed to download data');
+  } finally {
+    setDownloading(false);
+  }
+};
 
-        const ws = XLSX.utils.json_to_sheet(csvData);
-        const csv = XLSX.utils.sheet_to_csv(ws);
-        saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'Completed_FMS_Data.csv');
-      }
-
-      if (type === 'xlsx') {
-        const zip = new JSZip();
-        const chunkSize = 25;
-
-        for (let start = 0; start < data.length; start += chunkSize) {
-          const chunk = data.slice(start, start + chunkSize);
-          const workbook = new ExcelJS.Workbook();
-          const sheet = workbook.addWorksheet(`FMS_${start / chunkSize + 1}`);
-
-          const columns = [
-            { header: '#', key: 'sno', width: 6 },
-            { header: 'Feature ID', key: 'featureID', width: 15 },
-            { header: 'Agent Name', key: 'agent', width: 20 },
-            { header: 'Status', key: 'status', width: 15 },
-            { header: 'New Latitude', key: 'lat', width: 20 },
-            { header: 'New Longitude', key: 'lon', width: 20 },
-            { header: 'New Altitude', key: 'alt', width: 20 },
-            { header: 'Secondary Point', key: 'secondaryPoint', width: 20 },
-            { header: 'Corner Point', key: 'cornerPoint', width: 12 },
-            { header: 'Remarks', key: 'remarks', width: 30 },
-            { header: 'Created At', key: 'createdAt', width: 25 },
-            { header: 'Updated At', key: 'updatedAt', width: 25 },
-          ];
-
-          for (let j = 1; j <= 5; j++) {
-            columns.push({ header: `Image ${j}`, key: `img${j}`, width: 15 });
-          }
-
-          sheet.columns = columns;
-          sheet.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' };
-          sheet.getRow(1).font = { bold: true };
-
-          const rowHeight = 80;
-          const imageWidth = 80;
-          const imageHeight = 80;
-
-          for (let i = 0; i < chunk.length; i++) {
-            const item = chunk[i];
-            const rowIndex = i + 2;
-
-            const newRow = sheet.addRow({
-              sno: start + i + 1,
-              featureID: item.featureID || '',
-              agent: item.formData?.agent || '',
-              status: item.formData?.status || '',
-              lat: item.formData?.newLatitude || '',
-              lon: item.formData?.newLongitude || '',
-              alt: item.formData?.newAltitude || '',
-              secondaryPoint: item.formData?.secondaryPoint || '',
-              cornerPoint: item.formData?.cornerPoint || '',
-              remarks: item.formData?.remarks || '',
-              createdAt: item.createdAt ? new Date(item.createdAt).toLocaleString() : '',
-              updatedAt: item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '',
-            });
-            newRow.height = rowHeight;
-
-            newRow.eachCell((cell) => {
-              cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-            });
-
-            const images = item.formData?.images || [];
-            images.slice(0, 5).forEach((img, idx) => {
-              try {
-                const base64Data = img.includes(',') ? img.split(',')[1] : img;
-                const ext = img.includes('png') ? 'png' : 'jpeg';
-                const imageUint8 = base64ToUint8Array(base64Data);
-                const imageId = workbook.addImage({ buffer: imageUint8, extension: ext });
-                const col = 12 + idx;
-
-                sheet.addImage(imageId, {
-                  tl: { col, row: rowIndex - 1 },
-                  ext: { width: imageWidth, height: imageHeight },
-                  editAs: 'oneCell',
-                });
-              } catch (e) {
-                console.warn('Skipping image:', e);
-              }
-            });
-          }
-
-          const buffer = await workbook.xlsx.writeBuffer();
-          zip.file(`Completed_FMS_File_${start / chunkSize + 1}.xlsx`, buffer);
-        }
-
-        const zipContent = await zip.generateAsync({ type: 'blob' });
-        saveAs(zipContent, 'Completed_FMS_Data.zip');
-      }
-
-      incrementDownloadCount();
-      toast.success(`${type.toUpperCase()} Downloaded successfully.`);
-    } catch (err) {
-      console.error('❌ Download error:', err);
-      toast.error('Failed to download data.');
-    } finally {
-      setDownloading(false);
-    }
-  };
 
   // -------------------- UI --------------------
   return (

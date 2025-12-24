@@ -4,9 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../../styles/MapViewer/mapheader.css';
 
-import { saveAs } from 'file-saver';
-import axios from 'axios';
-
 import loading from '../../assets/MapViewer/refresh.png';
 import homeIcon from '../../assets/MapViewer/home.png';
 import searchIcon from '../../assets/search.png';
@@ -83,25 +80,19 @@ const handleDownload = async (type) => {
     setShowMenu(false);
     setDownloading(true);
 
-    const res = await axios.get(`/api/fms/download/download?type=${type}`, {
-      responseType: 'blob',
-    });
+      const downloadFile = (type) => {
+      window.location.href = `/api/fms/download/download?type=${type}`;
+      };
 
-    const filename =
-      type === 'csv'
-        ? 'Completed_FMS_Data.csv'
-        : 'Completed_FMS_Data.zip';
-
-    saveAs(res.data, filename);
+    downloadFile(type);
 
     incrementDownloadCount();
-    toast.success(`${type.toUpperCase()} downloaded successfully`);
+    toast.success(`${type.toUpperCase()} download started`);
   } catch (err) {
     console.error(err);
     toast.error('Failed to download data');
   } finally {
-    setDownloading(false);
-  }
+    setTimeout(() => setDownloading(false), 1000); }
 };
 
 

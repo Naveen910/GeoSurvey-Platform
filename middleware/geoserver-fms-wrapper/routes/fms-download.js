@@ -9,7 +9,7 @@ const router = express.Router();
 /**
  * GET /api/fms/download?type=csv|xlsx
  */
-router.get('/', async (req, res) => {
+router.get('/download', async (req, res) => {
   try {
     const { type } = req.query;
     if (!['csv', 'xlsx'].includes(type)) {

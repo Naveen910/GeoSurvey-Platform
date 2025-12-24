@@ -83,7 +83,7 @@ const handleDownload = async (type) => {
     setShowMenu(false);
     setDownloading(true);
 
-    const res = await axios.get(`/api/fms/download?type=${type}`, {
+    const res = await axios.get(`/api/fms/download/download?type=${type}`, {
       responseType: 'blob',
     });
 

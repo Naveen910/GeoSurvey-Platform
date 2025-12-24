@@ -3,9 +3,7 @@ import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../../styles/MapViewer/mapheader.css';
-import * as XLSX from 'xlsx';
-import ExcelJS from 'exceljs';
-import JSZip from 'jszip';
+
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 

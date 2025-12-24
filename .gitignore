@@ -1,5 +1,5 @@
 # Node dependencies
-middleware/node_modules/
+middleware/geoserver-fms-wrapper/node_modules
 
 # Logs
 npm-debug.log*
@@ -12,3 +12,6 @@ yarn-error.log*
 .env.local
 .env.production
 .env.development
+
+# OS
+.DS_Store

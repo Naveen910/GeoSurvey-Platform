@@ -1,3 +1,134 @@
 # GeoSurvey-Platform
 
 Professional GIS & Survey Management
+
+## Project Structure
+
+```
+📁 GeoSurvey-Platform
+├── 📁 geo-survey-platform
+│   ├── 📁 public
+│   │   ├── 🖼️ favicon.png
+│   │   ├── 🌐 index.html
+│   │   ├── ⚙️ manifest.json
+│   │   └── 📄 robots.txt
+│   ├── 📁 src
+│   │   ├── 📁 assets
+│   │   │   ├── 📁 MapViewer
+│   │   │   │   ├── 🖼️ bookmark.png
+│   │   │   │   ├── 🖼️ circle.png
+│   │   │   │   ├── 🖼️ closedeye.png
+│   │   │   │   ├── 🖼️ download.png
+│   │   │   │   ├── 🖼️ freehand.png
+│   │   │   │   ├── 🖼️ geopointer.png
+│   │   │   │   ├── 🖼️ home.png
+│   │   │   │   ├── 🖼️ layers.png
+│   │   │   │   ├── 🖼️ line.png
+│   │   │   │   ├── 🖼️ locate.png
+│   │   │   │   ├── 🖼️ measure.png
+│   │   │   │   ├── 🖼️ openeye.png
+│   │   │   │   ├── 🖼️ pencil.png
+│   │   │   │   ├── 🖼️ point.png
+│   │   │   │   ├── 🖼️ polygon.png
+│   │   │   │   ├── 🖼️ refresh.png
+│   │   │   │   ├── 🖼️ refresh2.png
+│   │   │   │   ├── 🖼️ satellite.png
+│   │   │   │   ├── 🖼️ share.png
+│   │   │   │   ├── 🖼️ streets.png
+│   │   │   │   ├── 🖼️ terrain.png
+│   │   │   │   ├── 🖼️ topo.png
+│   │   │   │   ├── 🖼️ zoomin.png
+│   │   │   │   └── 🖼️ zoomout.png
+│   │   │   ├── 📁 content
+│   │   │   │   ├── 🖼️ Construction.png
+│   │   │   │   ├── 🖼️ Downtown.png
+│   │   │   │   ├── 🖼️ GridButton.png
+│   │   │   │   ├── 🖼️ ListButton.png
+│   │   │   │   ├── 🖼️ Property.png
+│   │   │   │   └── 🖼️ SiteInvestigation.png
+│   │   │   ├── 📁 quickLinks
+│   │   │   │   ├── 🖼️ Database.png
+│   │   │   │   ├── 🖼️ analysis.png
+│   │   │   │   ├── 🖼️ arrow.png
+│   │   │   │   ├── 🖼️ layer.png
+│   │   │   │   └── 🖼️ map.png
+│   │   │   ├── 📁 quickactions
+│   │   │   │   ├── 🖼️ addData.png
+│   │   │   │   ├── 🖼️ createDash.png
+│   │   │   │   ├── 🖼️ createWeb.png
+│   │   │   │   └── 🖼️ storymap.png
+│   │   │   ├── 🖼️ SystemOverview.png
+│   │   │   ├── 🖼️ bluepin.png
+│   │   │   ├── 🖼️ copy.png
+│   │   │   ├── 🖼️ geo.png
+│   │   │   ├── 🖼️ greenpin.png
+│   │   │   ├── 🖼️ notify.png
+│   │   │   ├── 🖼️ pin.png
+│   │   │   ├── 🖼️ search.png
+│   │   │   ├── 🖼️ settings.png
+│   │   │   └── 🖼️ share.png
+│   │   ├── 📁 components
+│   │   │   ├── 📁 MapViewer
+│   │   │   │   ├── 📄 FeatureOverlay.jsx
+│   │   │   │   ├── 📄 FmsPanel.jsx
+│   │   │   │   ├── 📄 LeftPanel.jsx
+│   │   │   │   ├── 📄 MapHeader.jsx
+│   │   │   │   ├── 📄 MapMain.jsx
+│   │   │   │   ├── 📄 NearestRoutesPanel.jsx
+│   │   │   │   └── 📄 StreetViewPanel.jsx
+│   │   │   ├── 📄 ContentSection.jsx
+│   │   │   ├── 📄 ContentTabs.jsx
+│   │   │   ├── 📄 Header.jsx
+│   │   │   ├── 📄 QuickActions.jsx
+│   │   │   ├── 📄 QuickLinks.jsx
+│   │   │   └── 📄 SystemOverview.jsx
+│   │   ├── 📁 pages
+│   │   │   ├── 📄 Dashboard.jsx
+│   │   │   └── 📄 MapViewer.jsx
+│   │   ├── 📁 styles
+│   │   │   ├── 📁 MapViewer
+│   │   │   │   ├── 🎨 FmsPanel.css
+│   │   │   │   ├── 🎨 leftpanel.css
+│   │   │   │   ├── 🎨 mapheader.css
+│   │   │   │   ├── 🎨 mapmain.css
+│   │   │   │   ├── 🎨 mapviewer.css
+│   │   │   │   ├── 🎨 nearestRoutesPanel.css
+│   │   │   │   └── 🎨 streetviewpanel.css
+│   │   │   ├── 🎨 contentsection.css
+│   │   │   ├── 🎨 dashboard.css
+│   │   │   ├── 🎨 header.css
+│   │   │   ├── 🎨 quickactions.css
+│   │   │   ├── 🎨 quicklinks.css
+│   │   │   └── 🎨 systemoverview.css
+│   │   ├── 📁 utils
+│   │   │   └── 📄 indexedDB.js
+│   │   ├── 🎨 App.css
+│   │   ├── 📄 App.js
+│   │   ├── 📄 App.test.js
+│   │   ├── 🎨 index.css
+│   │   ├── 📄 index.js
+│   │   ├── 📄 reportWebVitals.js
+│   │   └── 📄 setupTests.js
+│   ├── ⚙️ .gitignore
+│   ├── 📝 README.md
+│   ├── 📄 notes.txt
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   ├── 📄 postcss.config.js
+│   └── 📄 tailwind.config.js
+├── 📁 middleware
+│   └── 📁 geoserver-fms-wrapper
+│       ├── 📁 models
+│       │   └── 📄 FormSchema.js
+│       ├── 📁 routes
+│       │   ├── 📄 distanceMatrix.js
+│       │   ├── 📄 fms-download.js
+│       │   ├── 📄 fms.js
+│       │   └── 📄 systemoverview.js
+│       ├── ⚙️ package-lock.json
+│       ├── ⚙️ package.json
+│       ├── 📄 server.js
+│       └── 📄 socket.js
+├── ⚙️ .gitignore
+└── 📝 README.md
+```

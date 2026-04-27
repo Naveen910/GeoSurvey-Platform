@@ -89,7 +89,6 @@ Professional GIS & Survey Management
   <img src="images/4.png" height="200"/>
   <img src="images/5.png" height="200"/>
   <img src="images/6.png" height="200"/>
-  <img src="images/7.png" height="200"/>
-  <img src="images/8.png" height="200"/>
-
+  <img src="images/7.jpg" height="200"/>
+  <img src="images/8.jpg" height="200"/>
 </div>

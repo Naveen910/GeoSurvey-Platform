@@ -84,11 +84,12 @@ Professional GIS & Survey Management
 └── 📝 README.md
 ```
 
-<div style="display: flex; overflow-x: auto; gap: 10px; padding: 10px; scroll-behavior: smooth;">  <img src="images/2.png" height="200"/>
-  <img src="images/3.png" height="200"/>
-  <img src="images/4.png" height="200"/>
-  <img src="images/5.png" height="200"/>
-  <img src="images/6.png" height="200"/>
-  <img src="images/7.jpg" height="200"/>
-  <img src="images/8.jpg" height="200"/>
+<div style="display: flex; overflow-x: auto; gap: 10px; padding: 10px; scroll-behavior: smooth;">  
+    <img src="images/7.jpg" height="200"/>
+    <img src="images/8.jpg" height="200"/>
+    <img src="images/2.png" height="200"/>
+    <img src="images/3.png" height="200"/>
+    <img src="images/4.png" height="200"/>
+    <img src="images/5.png" height="200"/>
+    <img src="images/6.png" height="200"/>
 </div>

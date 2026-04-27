@@ -84,4 +84,11 @@ Professional GIS & Survey Management
 └── 📝 README.md
 ```
 
-![App Screenshot](images/2.png)
+<div style="display: flex; overflow-x: auto; gap: 10px; padding: 10px;">
+  <img src="images/1.png" height="200"/>
+  <img src="images/2.png" height="200"/>
+  <img src="images/3.png" height="200"/>
+  <img src="images/4.png" height="200"/>
+  <img src="images/5.png" height="200"/>
+  <img src="images/6.png" height="200"/>
+</div>
